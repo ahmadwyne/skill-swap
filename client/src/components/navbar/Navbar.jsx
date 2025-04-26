@@ -1,4 +1,3 @@
-// src/components/navbar/Navbar.jsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -24,8 +23,9 @@ const Navbar = () => {
             <>
               <Link to="/profile" className="hover:underline">Profile</Link>
               <Link to="/skill-matching" className="hover:underline">Skill Matching</Link>
-              <Link to="/chat" className="hover:underline">Chat</Link> {/* Chat link */}
-              <Link to="/sessions" className="hover:underline">Sessions</Link> {/* Sessions link */}
+              {/* Update chat link to take user to the generic chat page */}
+              <Link to="/chat" className="hover:underline">Chat</Link>
+              <Link to="/sessions" className="hover:underline">Sessions</Link>
               {isAdmin && <Link to="/admin" className="hover:underline">Admin Dashboard</Link>}
               <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Logout</button>
             </>
