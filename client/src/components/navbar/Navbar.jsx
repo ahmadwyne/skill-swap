@@ -11,7 +11,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate('/login');  // Redirect user to login page after logging out
   };
 
   return (
@@ -23,6 +23,7 @@ const Navbar = () => {
           {token ? (
             <>
               <Link to="/profile" className="hover:underline">Profile</Link>
+              <Link to="/skill-matching" className="hover:underline">Skill Matching</Link> {/* Updated link */}
               <Link to="/skills" className="hover:underline">Manage Skills</Link>
               <Link to="/sessions" className="hover:underline">Sessions</Link>
               {isAdmin && <Link to="/admin" className="hover:underline">Admin Dashboard</Link>}

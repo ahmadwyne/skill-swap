@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginStart, loginSuccess, loginFailure } from '../redux/slices/authSlice';
@@ -16,10 +15,19 @@ const LoginPage = () => {
     e.preventDefault();
     dispatch(loginStart());
     try {
+      // Send login request to backend
       const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      
+      // Save token and user data in localStorage
       localStorage.setItem('token', response.data.token);
-      dispatch(loginSuccess(response.data.token));
-      navigate('/profile');
+      localStorage.setItem('user', JSON.stringify({  // Save user info
+        name: response.data.name,
+        email: response.data.email,
+        _id: response.data.id,  // Ensure the backend returns the user ID
+      }));
+
+      dispatch(loginSuccess(response.data.token)); // Store token in Redux
+      navigate('/profile');  // Redirect to profile page after login
     } catch (err) {
       dispatch(loginFailure(err.response?.data?.msg || 'Something went wrong!'));
       setError(err.response?.data?.msg || 'Something went wrong!');
