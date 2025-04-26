@@ -65,10 +65,17 @@ const loginUser = async (req, res) => {
     // Generate JWT token
     const payload = { user: { id: user.id } };
 
+    // In authController.js (loginUser function)
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
       if (err) throw err;
-      res.json({ token });
+      res.json({
+        token,
+        name: user.name,
+        email: user.email,
+        id: user._id,  // Send user data along with the token
+      });
     });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

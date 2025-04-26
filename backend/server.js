@@ -1,30 +1,31 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes'); // Import authentication routes
-const userRoutes = require('./routes/userRoutes'); // Import user routes
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const matchRoutes = require('./routes/matchRoutes'); // Ensure this line is correct
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(express.json());  // For parsing JSON bodies
-app.use(cors()); // Enable CORS
+app.use(express.json());
+app.use(cors());
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.log('Error connecting to MongoDB:', err));
 
-// Authentication routes
-app.use('/api/auth', authRoutes); // Link the authentication routes
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/matches', matchRoutes); // This should be linked correctly
 
-// User routes (for profile, etc.)
-app.use('/api/users', userRoutes); // Link the user routes (profile, etc.)
-
-// Simple route to test
+// Simple route to test if server is working
 app.get('/', (req, res) => {
   res.send('SkillSwap API is running');
 });

@@ -1,11 +1,12 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';  // Home page component (from pages folder)
-import LoginPage from './pages/LoginPage';  // Login page component (from pages folder)
-import RegisterPage from './pages/RegisterPage';  // Register page component (from pages folder)
-import ProfilePage from './pages/ProfilePage';  // Profile page component (from pages folder)
-import PrivateRoute from './components/common/PrivateRoute';  // PrivateRoute component (from common folder)
-import './App.css';  // Assuming you have a separate app stylesheet
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import SkillMatchingPage from './pages/SkillMatchingPage';  // Import SkillMatchingPage
+import PrivateRoute from './components/common/PrivateRoute'; // PrivateRoute for protecting pages
+import './App.css';
 
 function App() {
   return (
@@ -15,11 +16,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         
-        {/* Protect the profile route with PrivateRoute */}
-        <Route 
-          path="/profile" 
-          element={<PrivateRoute element={<ProfilePage />} />} 
-        />
+        {/* Protecting the profile and skill matching pages */}
+        <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
+        <Route path="/skill-matching" element={<PrivateRoute element={<SkillMatchingPage />} />} /> {/* Use consistent naming */}
       </Routes>
     </Router>
   );

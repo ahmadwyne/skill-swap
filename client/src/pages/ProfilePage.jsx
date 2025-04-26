@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/navbar/Navbar';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate for navigation
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ const ProfilePage = () => {
   const [skillsToLearn, setSkillsToLearn] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();  // Initialize useNavigate for redirecting
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -40,6 +42,9 @@ const ProfilePage = () => {
       setUser(response.data);
       setSuccess('Profile updated successfully!');
       setError('');
+      
+      // Navigate to the skill matching page after a successful profile update
+      navigate('/skill-matching'); // Redirect to the Skill Matching page
     } catch (err) {
       setError('Failed to update profile.');
       setSuccess('');
