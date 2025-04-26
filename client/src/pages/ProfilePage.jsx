@@ -1,9 +1,7 @@
-// src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/navbar/Navbar';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -34,7 +32,6 @@ const ProfilePage = () => {
     fetchUserProfile();
   }, []);
 
-  // Fetch both pending and accepted sessions
   useEffect(() => {
     const fetchSessions = async () => {
       const token = localStorage.getItem('token');
@@ -74,6 +71,7 @@ const ProfilePage = () => {
     }
   };
 
+  // Handle profile update
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -92,13 +90,17 @@ const ProfilePage = () => {
     }
   };
 
+  // Navigate to ChatPage with the selected sessionId
+  const handleStartChat = (sessionId) => {
+    navigate(`/chat/${sessionId}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Welcome, {user?.name}</h1>
 
-        {/* Success and Error Messages */}
         {success && <div className="bg-green-500 text-white p-2 rounded mb-4">{success}</div>}
         {error && <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>}
 
@@ -170,12 +172,12 @@ const ProfilePage = () => {
                   <p><strong>Session with:</strong> {session.userId1.name}</p>
                   <p><strong>Date:</strong> {session.sessionDate}</p>
                   <p><strong>Time:</strong> {session.sessionTime}</p>
-                  <Link
-                    to={`/chat/${session._id}`}
+                  <button
+                    onClick={() => handleStartChat(session._id)} // Redirect to chat page with sessionId
                     className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 mt-4"
                   >
                     Start Chat
-                  </Link>
+                  </button>
                 </div>
               ))
             ) : (
