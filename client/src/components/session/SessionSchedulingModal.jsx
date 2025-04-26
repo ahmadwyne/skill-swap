@@ -1,14 +1,14 @@
 // src/components/session/SessionSchedulingModal.jsx
 import React, { useState } from 'react';
 
-const SessionSchedulingModal = ({ isOpen, closeModal, scheduleSession }) => {
+const SessionSchedulingModal = ({ isOpen, closeModal, scheduleSession, selectedUserId }) => {
   const [sessionDate, setSessionDate] = useState('');
   const [sessionTime, setSessionTime] = useState('');
 
   const handleSubmit = () => {
     if (sessionDate && sessionTime) {
-      scheduleSession({ sessionDate, sessionTime });
-      closeModal();
+      scheduleSession({ sessionDate, sessionTime }); // Pass the details to the parent function
+      closeModal(); // Close the modal after scheduling
     }
   };
 

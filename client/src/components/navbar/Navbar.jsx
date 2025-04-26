@@ -23,9 +23,9 @@ const Navbar = () => {
           {token ? (
             <>
               <Link to="/profile" className="hover:underline">Profile</Link>
-              <Link to="/skill-matching" className="hover:underline">Skill Matching</Link> {/* Updated link */}
-              <Link to="/skills" className="hover:underline">Manage Skills</Link>
-              <Link to="/sessions" className="hover:underline">Sessions</Link>
+              <Link to="/skill-matching" className="hover:underline">Skill Matching</Link>
+              <Link to="/chat" className="hover:underline">Chat</Link> {/* Chat link */}
+              <Link to="/sessions" className="hover:underline">Sessions</Link> {/* Sessions link */}
               {isAdmin && <Link to="/admin" className="hover:underline">Admin Dashboard</Link>}
               <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Logout</button>
             </>

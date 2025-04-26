@@ -1,20 +1,33 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const http = require('http');  // Import HTTP module to work with Socket.io
-const socketIo = require('socket.io');  // Import Socket.io
+const http = require('http');
+const socketIo = require('socket.io');
 
+// Import routes and controllers
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const matchRoutes = require('./routes/matchRoutes');
-const sessionRoutes = require('./routes/sessionRoutes'); // Add session routes
+const sessionRoutes = require('./routes/sessionRoutes');  // Your session routes
+const { setSocketIO } = require('./controllers/sessionController');  // Import the setSocketIO function
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);  // Use HTTP server to integrate with Socket.io
-const io = socketIo(server);  // Initialize Socket.io with the server
+const server = http.createServer(app);  // Create the HTTP server using Express
+const io = socketIo(server, {
+  cors: {
+    origin: 'http://localhost:5173',  // Allow requests from your React app
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true,  // Allow cookies if needed
+  },
+});
+
+// Set the io instance in the controller
+setSocketIO(io);
 
 // Middleware
 app.use(express.json());
@@ -23,24 +36,17 @@ app.use(cors());
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.log('Error connecting to MongoDB:', err));
+  .catch((err) => console.log('Error connecting to MongoDB:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/matches', matchRoutes);  // Ensure this is linked correctly
-app.use('/api/sessions', sessionRoutes);  // Add session routes
+app.use('/api/matches', matchRoutes);
+app.use('/api/sessions', sessionRoutes);  // Ensure this is properly linked
 
-// Socket.io connection for real-time chat
+// Socket.io connection
 io.on('connection', (socket) => {
   console.log('A user connected');
-  
-  // Listen for incoming messages and emit to all users
-  socket.on('send_message', (data) => {
-    console.log('Message received:', data);
-    io.emit('receive_message', data);  // Emit message to all connected clients
-  });
-  
   socket.on('disconnect', () => {
     console.log('A user disconnected');
   });
@@ -53,6 +59,6 @@ app.get('/', (req, res) => {
 
 // Server
 const port = process.env.PORT || 5000;
-server.listen(port, () => {  // Use server.listen instead of app.listen
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
