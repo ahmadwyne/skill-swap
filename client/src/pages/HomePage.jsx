@@ -13,7 +13,7 @@ const Home = () => {
         <img
           src={bgImage}
           alt="Background"
-          className="w-full h-full object-cover opacity-60"
+          className="w-full h-full object-cover"
         />
       </div>
 
@@ -29,7 +29,7 @@ const Home = () => {
         </h1>
         <p className="text-gray-700 text-lg">Empower your skills. Connect. Grow.</p>
         <p className="text-gray-600 text-sm mb-8">
-        Skill Swap, A platform where learners meet learners—share, teach, and grow together.
+          Skill Swap, A platform where learners meet learners—share, teach, and grow together.
         </p>
 
         <motion.div whileHover={{ scale: 1.02 }}>

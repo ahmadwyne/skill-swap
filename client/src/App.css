@@ -1,17 +1,18 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 html,
 body,
 #root {
   height: 100%;
+  width: 100%; /* Add this to ensure full width */
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrollbars */
+  overflow: hidden; /* Prevent scrollbars */
 }
+
+#root {
+  padding: 0; /* Remove padding to avoid unnecessary spacing */
+  text-align: center;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -46,12 +47,4 @@ body,
 
 .read-the-docs {
   color: #888;
-}
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Prevent scrollbars */
 }
