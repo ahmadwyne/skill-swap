@@ -11,6 +11,7 @@ import loginImage from "../assets/auth-bg.jpg";
 import { FiMail, FiLock } from "react-icons/fi";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { motion } from "framer-motion";
+import {jwtDecode} from 'jwt-decode'; // Added this line
 
 const LoginPage = () => {
   const dispatch = useDispatch();
@@ -47,19 +48,28 @@ const LoginPage = () => {
         password,
       });
 
-      // Save token and user info
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: response.data.name,
-          email: response.data.email,
-          _id: response.data.id,
-        })
-      );
+      const token = response.data.token;
+      const decoded = jwtDecode(token)
 
-      dispatch(loginSuccess(response.data.token));
-      navigate("/profile");
+      const role = decoded?.user?.role || 'user';
+
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify({
+        name: response.data.name,
+        email: response.data.email,
+        _id: response.data.id,
+        role: decoded.user.role // Save role too
+      }));
+
+      dispatch(loginSuccess(token));
+
+      // Redirect based on role
+      if (decoded.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/profile');
+      }
     } catch (err) {
       const errorMessage = err.response?.data?.msg || "Something went wrong!";
       dispatch(loginFailure(errorMessage));
@@ -157,6 +167,7 @@ const LoginPage = () => {
                 Register here
               </a>
             </p>
+
           </div>
         </div>
       </motion.div>
