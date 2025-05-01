@@ -7,7 +7,7 @@ import {
 } from "../redux/slices/authSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import loginImage from "../assets/login-bg.jpg";
+import loginImage from "../assets/auth-bg.jpg";
 import { FiMail, FiLock } from "react-icons/fi";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { motion } from "framer-motion";
@@ -83,23 +83,23 @@ const LoginPage = () => {
           transition={{ duration: 1, ease: "easeOut" }}
           className="absolute top-6 text-center"
         >
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
             Skill Swap
           </h1>
-          <p className="text-base text-gray-600 italic mt-1">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 italic mt-1">
             Empower your skills. Connect. Grow.
           </p>
         </motion.div>
 
         {/* Login Box */}
-        <div className="mt-12 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 rounded-3xl shadow-2xl p-10 w-[90%] max-w-md">
-          <h2 className="text-3xl font-bold text-white text-center mb-6">
+        <div className="mt-12 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 w-[90%] max-w-md">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-4 sm:mb-6">
             Welcome Back
           </h2>
           {/* Error Message */}
           {error && <p className="text-red-500 font-semibold text-center mb-3">{error}</p>}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Email Field */}
             <div className="relative">
               <FiMail className="absolute top-3.5 left-3 text-blue-500" />
@@ -113,7 +113,7 @@ const LoginPage = () => {
                     setError(""); // Clear error when user starts typing
                   }
                 }}
-                className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 sm:py-3 w-full rounded-full border border-gray-300 outline-none text-sm sm:text-base md:text-lg text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -130,7 +130,7 @@ const LoginPage = () => {
                     setError(""); // Clear error when user starts typing
                   }
                 }}
-                className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-10 py-2 sm:py-3 w-full rounded-full border border-gray-300 outline-none text-sm sm:text-base md:text-lg text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
               <div
                 className="absolute top-3.5 right-3 text-blue-500 cursor-pointer"
@@ -143,7 +143,7 @@ const LoginPage = () => {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-2/3 mx-auto block bg-blue-500 text-white font-semibold py-3 rounded-full border border-blue-700 hover:bg-blue-600 hover:text-gray-100 transition duration-300"
+              className="w-2/3 mx-auto block bg-blue-500 text-white font-semibold py-2 sm:py-3 rounded-full border border-blue-700 hover:bg-blue-600 hover:text-gray-100 transition duration-300 text-sm sm:text-base md:text-lg"
             >
               Login
             </button>
@@ -151,9 +151,9 @@ const LoginPage = () => {
 
           {/* Register Link */}
           <div className="text-center mt-4">
-            <p className="text-white">
+            <p className="text-sm sm:text-base md:text-lg text-white">
               Don't have an account?{" "}
-              <a href="/register" className="text-white underline hover:text-gray-200">
+              <a href="/register" className="underline hover:text-gray-200">
                 Register here
               </a>
             </p>

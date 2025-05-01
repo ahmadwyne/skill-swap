@@ -4,7 +4,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock } from "react-icons/fi";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import registerImage from "../assets/login-bg.jpg"; // Use same image as login
+import registerImage from "../assets/auth-bg.jpg"; // Use same image as login
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -40,11 +40,14 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          name,
+          email,
+          password,
+        }
+      );
       setSuccessMessage("Registration successful! Please log in.");
     } catch (err) {
       setError(err.response?.data?.msg || "Something went wrong!");
@@ -67,23 +70,35 @@ const RegisterPage = () => {
           transition={{ duration: 1, ease: "easeOut" }}
           className="text-center"
         >
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
             Skill Swap
           </h1>
           {/* Tagline */}
-          <p className="text-base text-gray-600 italic mt-2">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 italic mt-2">
             Empower your skills. Connect. Grow.
           </p>
         </motion.div>
 
         {/* Form Box */}
         <div className="mt-6 bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 rounded-3xl shadow-2xl p-8 w-[85%] max-w-md">
-          <h2 className="text-3xl font-bold text-white text-center mb-4">Create an Account</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center mb-4">
+            Create an Account
+          </h2>
 
-          {successMessage && <p className="text-green-100 text-center mb-4">{successMessage}</p>}
-          {error && <p className="text-red-500 font-semibold text-center mb-3">{error}</p>}
+          {successMessage && (
+            <p className="text-green-100 text-center mb-4">{successMessage}</p>
+          )}
+          {error && (
+            <p className="text-red-500 font-semibold text-center mb-3">
+              {error}
+            </p>
+          )}
 
-          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            autoComplete="off"
+            className="space-y-4"
+          >
             {/* Name Field */}
             <div className="relative">
               <FiUser className="absolute top-3.5 left-3 text-blue-500" />
@@ -109,7 +124,8 @@ const RegisterPage = () => {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (error === "Please enter a valid email address.") setError(""); // Clear error when user starts typing
+                  if (error === "Please enter a valid email address.")
+                    setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="off"
                 className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -125,7 +141,8 @@ const RegisterPage = () => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error === "Password must be at least 6 characters long.") setError(""); // Clear error when user starts typing
+                  if (error === "Password must be at least 6 characters long.")
+                    setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="new-password"
                 className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -156,7 +173,11 @@ const RegisterPage = () => {
                 className="absolute top-3.5 right-3 text-blue-500 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showConfirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+                {showConfirmPassword ? (
+                  <AiOutlineEyeInvisible />
+                ) : (
+                  <AiOutlineEye />
+                )}
               </div>
             </div>
 
