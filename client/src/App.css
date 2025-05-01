@@ -1,7 +1,15 @@
+html,
+body,
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  height: 100%;
+  width: 100%; /* Add this to ensure full width */
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars */
+}
+
+#root {
+  padding: 0; /* Remove padding to avoid unnecessary spacing */
   text-align: center;
 }
 
