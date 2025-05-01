@@ -160,4 +160,4 @@ const getMessages = async (req, res) => {
   }
 };  
 
-module.exports = { sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io
+module.exports = { io, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io

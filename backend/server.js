@@ -12,6 +12,7 @@ const userRoutes = require('./routes/userRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');  // Your session routes
 const { setSocketIO } = require('./controllers/sessionController');  // Import the setSocketIO function
+const { setSocket } = require('./controllers/notificationController');
 
 dotenv.config();
 
@@ -26,8 +27,9 @@ const io = socketIo(server, {
   },
 });
 
-// Set the io instance in the controller
-setSocketIO(io);
+// Set the io instance in both session and notification controllers
+setSocketIO(io);  // Set io for session messaging
+setSocket();      // Set io for notifications
 
 // Middleware
 app.use(express.json());
