@@ -4,6 +4,7 @@ import bgImage from "../assets/auth-bg.jpg";
 import { motion } from 'framer-motion';
 import { LogIn, UserPlus } from 'lucide-react';
 
+
 const Home = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 overflow-hidden">
