@@ -12,17 +12,18 @@ const userRoutes = require('./routes/userRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');  // Your session routes
 const { setSocketIO } = require('./controllers/sessionController');  // Import the setSocketIO function
+const adminRoutes = require('./routes/adminRoutes');  // ← Admin dashboard routes
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);  // Create the HTTP server using Express
+const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:5173',  // Allow requests from your React app
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
-    credentials: true,  // Allow cookies if needed
+    credentials: true,
   },
 });
 
@@ -42,7 +43,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/matches', matchRoutes);
-app.use('/api/sessions', sessionRoutes);  // Ensure this is properly linked
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/admin', adminRoutes);  // ← Mount Admin Dashboard routes
 
 // Socket.io connection
 io.on('connection', (socket) => {
