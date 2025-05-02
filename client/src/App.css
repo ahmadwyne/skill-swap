@@ -5,7 +5,7 @@ body,
   width: 100%; /* Add this to ensure full width */
   margin: 0;
   padding: 0;
-  overflow: auto;
+  overflow: auto; /* Prevent scrollbars */
 }
 
 #root {
