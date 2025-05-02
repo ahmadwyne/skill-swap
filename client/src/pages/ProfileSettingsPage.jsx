@@ -4,6 +4,7 @@ import { setUser } from '../redux/slices/profileSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar/Navbar';
+import { FaEdit } from 'react-icons/fa'; // Ensure this is correct
 
 const ProfileSettingsPage = () => {
   const [formData, setFormData] = useState({
@@ -117,27 +118,37 @@ const ProfileSettingsPage = () => {
         {message && <div className="mb-4 text-green-600">{message}</div>}
 
         {/* Profile Picture Upload */}
-        <div className="mb-4 flex justify-center">
-            <label htmlFor="profilePicture" className="cursor-pointer">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
-                {imagePreview ? (
-                    <img
-                    src={formData.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${formData.profilePicture}` : '/default-avatar.png'}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />     
-                )}
-                </div>
-            </label>
-            <input
-                type="file"
-                id="profilePicture"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-            />
+        <div className="mb-4 flex justify-center relative">
+          <label htmlFor="profilePicture" className="cursor-pointer">
+            {/* Profile Picture Container */}
+            <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center relative">
+              {/* Profile Picture */}
+              {imagePreview ? (
+                <img
+                  src={formData.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${formData.profilePicture}` : '/default-avatar.png'}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full" // Keep it rounded
+                />
+              ) : (
+                <img src={imagePreview} alt="Profile" className="w-full h-full object-cover rounded-full" />
+              )}
+              <div className="absolute top-[-8px] right-[-8px] z-10">
+              <FaEdit
+                className="text-white bg-gray-700 rounded-full p-2 text-3xl cursor-pointer hover:bg-blue-500 transition"
+              />
+            </div>
+            </div>
+            
+            {/* Pencil Icon */}
+            
+          </label>
+          <input
+            type="file"
+            id="profilePicture"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
         </div>
 
         {/* Rest of the Profile Fields */}

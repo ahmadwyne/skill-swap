@@ -115,29 +115,45 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative"> {/* Add relative positioning here */}
+      {/* Navbar */}
       <Navbar />
 
-      <div className="absolute top-4 right-6 flex items-center space-x-4">
-        <NotificationBell />
-        <img
-          onClick={() => navigate('/profile-settings')}
-          src={user?.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}` : '/default-avatar.png'}
-          alt="Profile"
-          className="w-10 h-10 rounded-full border cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
-        />
+      {/* Profile and Notification Section */}
+      <div className="flex justify-between items-start max-w-screen-md mx-auto p-8 bg-transparent mt-8">
+        {/* Profile Card */}
+        <div className="w-3/4">
+          {user && <ProfileCard user={user} />}  {/* Display ProfileCard */}
+        </div>
+
+        {/* Notification and Profile Settings Card */}
+        <div className="w-1/8 flex flex-col items-center absolute top-24 right-6 z-50"> {/* Adjusted width to 1/8 */}
+          {/* Card containing the profile icon and notification bell */}
+          <div className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center w-full h-16"> {/* Adjusted height as needed */}
+            <div className="flex items-center space-x-4 w-full justify-between">
+              {/* Notification Bell */}
+              <NotificationBell />
+              
+              {/* Profile Icon */}
+              <img
+                onClick={() => navigate('/profile-settings')}
+                src={user?.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}` : '/default-avatar.png'}
+                alt="Profile"
+                className="w-12 h-12 rounded-full border cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-
+      {/* Profile Info and Skills Info */}
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
-        {user && <ProfileCard user={user} />}  {/* Display ProfileCard */}
-
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Welcome, {user?.name}</h1>
 
         {success && <div className="bg-green-500 text-white p-2 rounded mb-4">{success}</div>}
         {error && <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>}
 
-        {/* Profile Info */}
+        {/* Skills Info */}
         <div className="space-y-6">
           <div>
             <label htmlFor="skillsToTeach" className="block text-lg font-medium text-gray-700">Skills You Can Teach</label>
