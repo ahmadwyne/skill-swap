@@ -25,3 +25,5 @@ const AdminNavbar = ({ adminName, profileImage, onToggleSidebar }) => {
 };
 
 export default AdminNavbar;
+
+

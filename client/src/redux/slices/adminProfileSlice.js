@@ -26,20 +26,7 @@ export const fetchProfile = createAsyncThunk(
   }
 );
 
-// // 2) Update name & picture
-// export const updateProfile = createAsyncThunk(
-//   'profile/updateProfile',
-//   async ({ name, profilePicture }, thunkAPI) => {
-//     try {
-//       const res = await API.put('/profile', { name, profilePicture });
-//       return res.data.user; // updated user object
-//     } catch (err) {
-//       return thunkAPI.rejectWithValue(
-//         err.response?.data?.message || err.message
-//       );
-//     }
-//   }
-// );
+
 
 export const updateProfile = createAsyncThunk(
     'profile/updateProfile',
