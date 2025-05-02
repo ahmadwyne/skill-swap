@@ -9,6 +9,30 @@
   transform: translateY(-10px);
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 }
+/* session-list: hide scrollbar by default, show thin on hover */
+.session-list {
+  /* Firefox */
+  scrollbar-width: none;
+}
+.session-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  transition: width 0.2s;
+}
+
+.session-list:hover {
+  /* Firefox */
+  scrollbar-width: thin;
+}
+.session-list:hover::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.session-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
 
 /* Position the bell icon at the top-right corner below navbar */
 .notification-bell {
