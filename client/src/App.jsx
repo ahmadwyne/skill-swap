@@ -1,78 +1,4 @@
-// // src/App.jsx
 
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import HomePage            from './pages/HomePage';
-// import LoginPage           from './pages/LoginPage';
-// import RegisterPage        from './pages/RegisterPage';
-// import ProfilePage         from './pages/ProfilePage';
-// import SkillMatchingPage   from './pages/SkillMatchingPage';
-// import ChatPage            from './pages/ChatPage';
-// import AdminDashboardPage  from './pages/AdminDashboardPage';       // Admin layout
-// import UserManagement      from './components/admin/UserManagement';
-// import ReportManagement    from './components/admin/ReportManagement';
-// import AnalyticsOverview   from './components/admin/AnalyticsOverview';
-// import PrivateRoute        from './components/common/PrivateRoute';
-// import './App.css';
-
-// function App() {
-//   return (
-//     <Router>
-//       <Routes>
-//         {/* Public */}
-//         <Route path="/"        element={<HomePage />} />
-//         <Route path="/login"   element={<LoginPage />} />
-//         <Route path="/register" element={<RegisterPage />} />
-
-//         {/* Protected User Routes */}
-//         <Route
-//           path="/profile"
-//           element={<PrivateRoute element={<ProfilePage />} />}
-//         />
-//         <Route
-//           path="/skill-matching"
-//           element={<PrivateRoute element={<SkillMatchingPage />} />}
-//         />
-//         <Route
-//           path="/chat"
-//           element={<PrivateRoute element={<ChatPage />} />}
-//         />
-//         <Route
-//           path="/chat/:sessionId"
-//           element={<PrivateRoute element={<ChatPage />} />}
-//         />
-
-//         {/* Admin Dashboard (only for admin role) */}
-//         <Route
-//           path="/admin"
-//           element={
-//             <PrivateRoute
-//               element={<AdminDashboardPage />}
-//               requiredRole="admin"
-//             />
-//           }
-//         >
-//           {/* Nested admin pages */}
-//           <Route
-//             path="users"
-//             element={<UserManagement />}
-//           />
-//           <Route
-//             path="reports"
-//             element={<ReportManagement />}
-//           />
-//           <Route
-//             path="analytics"
-//             element={<AnalyticsOverview />}
-//           />
-//         </Route>
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// export default App;
-
-// src/App.jsx
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage            from './pages/HomePage';
@@ -85,6 +11,7 @@ import AdminDashboardPage  from './pages/AdminDashboardPage';  // Must use <Outl
 import UserManagement      from './components/admin/UserManagement';
 import ReportManagement    from './components/admin/ReportManagement';
 import AnalyticsOverview   from './components/admin/AnalyticsOverview';
+import AdminProfile from './pages/AdminProfilePage'; // Admin Profile Page
 import PrivateRoute        from './components/common/PrivateRoute';
 import './App.css';
 
@@ -128,6 +55,7 @@ function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="reports" element={<ReportManagement />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </Router>

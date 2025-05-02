@@ -1,85 +1,63 @@
 // backend/controllers/adminController.js
+
 const User = require('../models/User');
 const Session = require('../models/Session');
 const Report = require('../models/Report');
-
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 
-// @desc    Get all users
-// @route   GET /api/admin/users
-// @access  Private/Admin
+// Environment vars for admin
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_NAME = process.env.ADMIN_NAME || 'Administrator';
+
+// ─── Get all users ───────────────────────────────────────────────
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find().select('-password -__v');
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Add a new user
-// @route   POST /api/admin/users
-// @access  Private/Admin
+// ─── Add a new user ──────────────────────────────────────────────
 const addUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    // Basic validation
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required.' });
     }
-    // Check if user exists
-    const existing = await User.findOne({ email });
-    if (existing) {
+    if (await User.exists({ email })) {
       return res.status(400).json({ message: 'Email already in use.' });
     }
     const user = new User({ name, email, password, role: role || 'user' });
     await user.save();
-    res.status(201).json({ message: 'User created', user: { id: user._id, name, email, role: user.role } });
+    res.status(201).json({
+      message: 'User created',
+      user: { id: user._id, name, email, role: user.role }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Delete a user
-// @route   DELETE /api/admin/users/:id
-// @access  Private/Admin
+// ─── Delete a user ───────────────────────────────────────────────
 const deleteUser = async (req, res) => {
-  // try {
-  //   const user = await User.findById(req.params.id);
-  //   if (!user) {
-  //     return res.status(404).json({ message: 'User not found' });
-  //   }
-  //   await user.remove();
-  //   res.status(200).json({ message: 'User deleted' });
-  // } catch (error) {
-  //   res.status(500).json({ message: error.message });
-  // }
   try {
     const { id } = req.params;
-
-    // 1) Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid user ID' });
     }
-
-    // 2) Attempt deletion
     const deleted = await User.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // 3) Success
-    return res.status(200).json({ message: 'User deleted' });
+    if (!deleted) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json({ message: 'User deleted' });
   } catch (error) {
-    // 4) Log the real error for inspection
     console.error('Error in deleteUser:', error);
-    return res.status(500).json({ message: 'Server error while deleting user' });
+    res.status(500).json({ message: 'Server error while deleting user' });
   }
 };
 
-// @desc    Get all reports/disputes
-// @route   GET /api/admin/reports
-// @access  Private/Admin
+// ─── Get all reports ─────────────────────────────────────────────
 const getAllReports = async (req, res) => {
   try {
     const reports = await Report.find()
@@ -92,15 +70,11 @@ const getAllReports = async (req, res) => {
   }
 };
 
-// @desc    Resolve a report/dispute
-// @route   PATCH /api/admin/reports/:id/resolve
-// @access  Private/Admin
+// ─── Resolve a report ────────────────────────────────────────────
 const resolveReport = async (req, res) => {
   try {
     const report = await Report.findById(req.params.id);
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
+    if (!report) return res.status(404).json({ message: 'Report not found' });
     report.status = 'resolved';
     await report.save();
     res.status(200).json({ message: 'Report resolved', report });
@@ -109,21 +83,102 @@ const resolveReport = async (req, res) => {
   }
 };
 
-// @desc    Get platform analytics
-// @route   GET /api/admin/analytics
-// @access  Private/Admin
+// ─── Get analytics ───────────────────────────────────────────────
 const getAnalytics = async (req, res) => {
   try {
     const userCount = await User.countDocuments();
-    console.log(userCount);
     const sessionCount = await Session.countDocuments();
     const reportCount = await Report.countDocuments();
-
     res.status(200).json({ userCount, sessionCount, reportCount });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ─── Get profile ─────────────────────────────────────────────────
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password -__v');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      image: user.image || 'https://placehold.co/150x150?text=Admin',
+      createdAt: user.createdAt
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ─── Update profile ──────────────────────────────────────────────
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Update name if provided
+    if (req.body.name) user.name = req.body.name;
+
+    // Support direct image URL from frontend
+    if (req.body.image) {
+      user.image = req.body.image;
+    }
+    // OR use uploaded file
+    else if (req.file) {
+      user.image = `/uploads/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    res.json({
+      message: 'Profile updated',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image || 'https://placehold.co/150x150?text=Admin',
+        createdAt: user.createdAt
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ─── Change password ─────────────────────────────────────────────
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: 'Both current and new passwords are required.' });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) {
+      return res
+        .status(400)
+        .json({ message: 'Current password is incorrect.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: 'Password changed successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getAllUsers,
   addUser,
@@ -131,4 +186,7 @@ module.exports = {
   getAllReports,
   resolveReport,
   getAnalytics,
+  getProfile,
+  updateProfile,
+  changePassword
 };

@@ -45,21 +45,57 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  // ─── 1) HARD-CODED ADMIN CHECK ─────────────────────────────────────────
-  if (
-    email === process.env.ADMIN_EMAIL &&
-    password === process.env.ADMIN_PASSWORD
-  ) {
-    // Issue an admin token (no DB lookup)
-    const payload = { user: { id: 'admin', role: 'admin' } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '2h',
-    });
+  // // ─── 1) HARD-CODED ADMIN CHECK ─────────────────────────────────────────
+  // if (
+  //   email === process.env.ADMIN_EMAIL &&
+  //   password === process.env.ADMIN_PASSWORD
+  // ) {
+  //   // Issue an admin token (no DB lookup)
+  //   const payload = { user: { id: 'admin', role: 'admin' } };
+  //   const token = jwt.sign(payload, process.env.JWT_SECRET, {
+  //     expiresIn: '2h',
+  //   });
+  //   return res.json({
+  //     token,
+  //     name: 'Admin',
+  //     email: process.env.ADMIN_EMAIL,
+  //     id: 'admin',
+  //   });
+  // }
+
+  // 1) Hard‑coded admin check
+  // if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+  //   // Find the seeded admin record
+  //   const admin = await User.findOne({ email });
+  //   const payload = { user: { id: admin._id.toString(), role: 'admin' } };
+  //   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
+  //   return res.json({
+  //     token,
+  //     name: admin.name,
+  //     email: admin.email,
+  //     id: admin._id
+  //   });
+  // }
+  if (email === process.env.ADMIN_EMAIL) {
+    const adminUser = await User.findOne({ email });
+  
+    if (!adminUser) {
+      return res.status(500).json({ msg: 'Admin record missing in DB' });
+    }
+  
+    const isMatch = await bcrypt.compare(password, adminUser.password);
+    if (!isMatch) {
+      return res.status(401).json({ msg: 'Invalid password' });
+    }
+  
+    const payload = { user: { id: adminUser._id.toString(), role: 'admin' } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
+  
     return res.json({
       token,
-      name: 'Admin',
-      email: process.env.ADMIN_EMAIL,
-      id: 'admin',
+      name: adminUser.name,
+      email: adminUser.email,
+      id: adminUser._id
     });
   }
 
@@ -87,7 +123,7 @@ const loginUser = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
- module.exports = { registerUser, loginUser }; 
+module.exports = { registerUser, loginUser };
 
 // const bcrypt = require('bcryptjs');
 // const jwt = require('jsonwebtoken');
