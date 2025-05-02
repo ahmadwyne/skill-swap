@@ -3,6 +3,7 @@ import axios from 'axios';
 import Navbar from '../components/navbar/Navbar';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
+import ProfileCard from '../components/ProfileCard';  // Import ProfileCard
 import { useDispatch } from 'react-redux';
 import { setNotifications } from '../redux/slices/notificationSlice';
 
@@ -117,11 +118,20 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="relative">
+      <div className="absolute top-4 right-6 flex items-center space-x-4">
         <NotificationBell />
+        <img
+          onClick={() => navigate('/profile-settings')}
+          src={user?.profilePicture || '/default-avatar.png'}
+          alt="Profile"
+          className="w-10 h-10 rounded-full border cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
+        />
       </div>
 
+
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
+        {user && <ProfileCard user={user} />}  {/* Display ProfileCard */}
+
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Welcome, {user?.name}</h1>
 
         {success && <div className="bg-green-500 text-white p-2 rounded mb-4">{success}</div>}
