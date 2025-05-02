@@ -28,7 +28,19 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
-  // Other fields like rating, sessions, etc.
+  profilePicture: { 
+    type: String, 
+    default: "" 
+  },
+  socials: {
+    facebook: String,
+    twitter: String,
+    linkedin: String,
+  },
+  status: { 
+    type: String, 
+    default: "" 
+  }
 });
 
 module.exports = mongoose.model('User', UserSchema);
