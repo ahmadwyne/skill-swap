@@ -13,6 +13,7 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const { setSocketIO: setSessionSocketIO } = require('./controllers/sessionController');
 const { setSocket: setNotificationSocketIO } = require('./controllers/notificationController');
+const adminRoutes = require('./routes/adminRoutes');  // ← Admin dashboard routes
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);  // ← Mount Admin Dashboard routes
 
 // ✅ Session namespace handling
 sessionSocket.on('connection', (socket) => {
@@ -65,7 +67,7 @@ sessionSocket.on('connection', (socket) => {
 // ✅ Notification namespace handling
 notificationSocket.on('connection', (socket) => {
   console.log('A user connected to notification socket');
-
+  
   socket.on('disconnect', () => {
     console.log('A user disconnected from notification socket');
   });
