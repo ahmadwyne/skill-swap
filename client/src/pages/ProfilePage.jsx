@@ -122,7 +122,7 @@ const ProfilePage = () => {
         <NotificationBell />
         <img
           onClick={() => navigate('/profile-settings')}
-          src={user?.profilePicture || '/default-avatar.png'}
+          src={user?.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}` : '/default-avatar.png'}
           alt="Profile"
           className="w-10 h-10 rounded-full border cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
         />

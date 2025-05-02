@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path'); 
 
 // Import routes and controllers
 const authRoutes = require('./routes/authRoutes');
@@ -41,6 +42,9 @@ setNotificationSocketIO(notificationSocket);
 // Express Middleware
 app.use(express.json());
 app.use(cors());
+
+// Serve static files (images) from 'uploads' folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../redux/slices/profileSlice';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar/Navbar';
 
 const ProfileSettingsPage = () => {
@@ -9,11 +11,16 @@ const ProfileSettingsPage = () => {
     profilePicture: '',
     status: '',
     socials: { linkedin: '', facebook: '', twitter: '' },
+    skillsToTeach: '',
+    skillsToLearn: ''
   });
-  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' });
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   const [message, setMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Fetch profile data
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem('token');
@@ -25,32 +32,79 @@ const ProfileSettingsPage = () => {
         profilePicture: res.data.profilePicture || '',
         status: res.data.status || '',
         socials: res.data.socials || {},
+        skillsToTeach: res.data.skillsToTeach.join(',') || '',
+        skillsToLearn: res.data.skillsToLearn.join(',') || ''
       });
+
+      if (res.data.profilePicture) {
+        setImagePreview(res.data.profilePicture); // Set the image preview if available
+      } else {
+        setImagePreview(null);  // Set imagePreview to null if no profile picture is found
+      }
     };
     fetchProfile();
   }, []);
 
+  // Handle profile update
   const handleUpdate = async () => {
+    const formDataToSend = new FormData();
+    
+    // Append all text fields
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('skillsToTeach', formData.skillsToTeach);
+    formDataToSend.append('skillsToLearn', formData.skillsToLearn);
+    
+    // Append socials as an object (don't stringify)
+    formDataToSend.append('socials[facebook]', formData.socials.facebook);
+    formDataToSend.append('socials[twitter]', formData.socials.twitter);
+    formDataToSend.append('socials[linkedin]', formData.socials.linkedin);    
+    
+    // If there's a profile picture, append it
+    if (formData.profilePicture) {
+      formDataToSend.append('profilePicture', formData.profilePicture);
+    }
+  
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/users/profile', formData, {
-        headers: { 'x-auth-token': token },
+      const res = await axios.put('http://localhost:5000/api/users/profile', formDataToSend, {
+        headers: {
+          'x-auth-token': token,
+          'Content-Type': 'multipart/form-data', // Set the content type to multipart
+        },
       });
-      setMessage('Profile updated!');
-    } catch {
-      setMessage('Update failed.');
+  
+      dispatch(setUser(res.data)); // Update the Redux store
+      setMessage('Profile updated successfully!');
+      navigate('/profile');
+    } catch (err) {
+      setMessage('Update failed. Please try again.');
     }
   };
 
+  // Handle password change
   const handlePasswordChange = async () => {
+    if (passwords.newPassword !== passwords.confirmNewPassword) {
+      setMessage("Passwords don't match!");
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/users/change-password', passwords, {
+      const res = await axios.put('http://localhost:5000/api/users/change-password', passwords, {
         headers: { 'x-auth-token': token },
       });
-      setMessage('Password updated!');
-    } catch {
-      setMessage('Password change failed.');
+      setMessage('Password updated successfully!');
+    } catch (err) {
+      setMessage('Password update failed. Please try again.');
+    }
+  };
+
+  // Handle image upload and preview
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, profilePicture: file });
+      setImagePreview(URL.createObjectURL(file));  // Set the image preview
     }
   };
 
@@ -62,90 +116,153 @@ const ProfileSettingsPage = () => {
 
         {message && <div className="mb-4 text-green-600">{message}</div>}
 
-        <input
-          type="text"
-          placeholder="Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full mb-3 p-3 border rounded"
-        />
+        {/* Profile Picture Upload */}
+        <div className="mb-4 flex justify-center">
+            <label htmlFor="profilePicture" className="cursor-pointer">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
+                {imagePreview ? (
+                    <img
+                    src={formData.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${formData.profilePicture}` : '/default-avatar.png'}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />     
+                )}
+                </div>
+            </label>
+            <input
+                type="file"
+                id="profilePicture"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+            />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Status"
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="w-full mb-3 p-3 border rounded"
-        />
+        {/* Rest of the Profile Fields */}
+        {/* Name, Status, Social Links, Skills */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Profile Picture URL"
-          value={formData.profilePicture}
-          onChange={(e) => setFormData({ ...formData, profilePicture: e.target.value })}
-          className="w-full mb-3 p-3 border rounded"
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Status"
+            value={formData.status}
+            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="LinkedIn"
-          value={formData.socials.linkedin || ''}
-          onChange={(e) =>
-            setFormData({ ...formData, socials: { ...formData.socials, linkedin: e.target.value } })
-          }
-          className="w-full mb-3 p-3 border rounded"
-        />
+        {/* Social Links */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="LinkedIn"
+            value={formData.socials.linkedin || ''}
+            onChange={(e) =>
+              setFormData({ ...formData, socials: { ...formData.socials, linkedin: e.target.value } })
+            }
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Facebook"
-          value={formData.socials.facebook || ''}
-          onChange={(e) =>
-            setFormData({ ...formData, socials: { ...formData.socials, facebook: e.target.value } })
-          }
-          className="w-full mb-3 p-3 border rounded"
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Facebook"
+            value={formData.socials.facebook || ''}
+            onChange={(e) =>
+              setFormData({ ...formData, socials: { ...formData.socials, facebook: e.target.value } })
+            }
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Twitter"
-          value={formData.socials.twitter || ''}
-          onChange={(e) =>
-            setFormData({ ...formData, socials: { ...formData.socials, twitter: e.target.value } })
-          }
-          className="w-full mb-3 p-3 border rounded"
-        />
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Twitter"
+            value={formData.socials.twitter || ''}
+            onChange={(e) =>
+              setFormData({ ...formData, socials: { ...formData.socials, twitter: e.target.value } })
+            }
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
+        {/* Skills */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Skills You Can Teach"
+            value={formData.skillsToTeach}
+            onChange={(e) => setFormData({ ...formData, skillsToTeach: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Skills You Want to Learn"
+            value={formData.skillsToLearn}
+            onChange={(e) => setFormData({ ...formData, skillsToLearn: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        {/* Save Changes Button */}
         <button
           onClick={handleUpdate}
-          className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 mb-6"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300"
         >
           Save Changes
         </button>
 
-        <h3 className="text-xl font-semibold mb-2">Change Password</h3>
+        {/* Change Password Section */}
+        <div className="mt-8 mb-4 border-t pt-4">
+          <h3 className="text-2xl font-semibold text-gray-700 mb-4">Change Password</h3>
 
-        <input
-          type="password"
-          placeholder="Current Password"
-          value={passwords.currentPassword}
-          onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-          className="w-full mb-3 p-3 border rounded"
-        />
-        <input
-          type="password"
-          placeholder="New Password"
-          value={passwords.newPassword}
-          onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-          className="w-full mb-3 p-3 border rounded"
-        />
+          <input
+            type="password"
+            placeholder="Current Password"
+            value={passwords.currentPassword}
+            onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
+            className="w-full p-3 mb-4 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
 
-        <button
-          onClick={handlePasswordChange}
-          className="w-full bg-red-600 text-white py-3 rounded hover:bg-red-700"
-        >
-          Change Password
-        </button>
+          <input
+            type="password"
+            placeholder="New Password"
+            value={passwords.newPassword}
+            onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+            className="w-full p-3 mb-4 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={passwords.confirmNewPassword}
+            onChange={(e) => setPasswords({ ...passwords, confirmNewPassword: e.target.value })}
+            className="w-full p-3 mb-4 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+
+          <button
+            onClick={handlePasswordChange}
+            className="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300"
+          >
+            Change Password
+          </button>
+        </div>
       </div>
     </div>
   );

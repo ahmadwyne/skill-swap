@@ -33,9 +33,9 @@ const UserSchema = new mongoose.Schema({
     default: "" 
   },
   socials: {
-    facebook: String,
-    twitter: String,
-    linkedin: String,
+    facebook: { type: String, default: '' },
+    twitter: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
   },
   status: { 
     type: String, 
