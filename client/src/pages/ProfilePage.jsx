@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/navbar/Navbar';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import NotificationBell from '../components/NotificationBell';
+import { useDispatch } from 'react-redux';
+import { setNotifications } from '../redux/slices/notificationSlice';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -12,6 +15,7 @@ const ProfilePage = () => {
   const [pendingSessions, setPendingSessions] = useState([]); // Store pending sessions
   const [acceptedSessions, setAcceptedSessions] = useState([]); // Store accepted sessions
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -24,13 +28,27 @@ const ProfilePage = () => {
           setUser(response.data);
           setSkillsToTeach(response.data.skillsToTeach.join(','));
           setSkillsToLearn(response.data.skillsToLearn.join(','));
+          fetchNotifications(response.data._id);  // Fetch notifications for the current user
         } catch (err) {
           setError('Failed to load profile data.');
         }
       }
     };
+  
+    const fetchNotifications = async (userId) => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await axios.get(`http://localhost:5000/api/notifications/${userId}`, {
+          headers: { 'x-auth-token': token },
+        });
+        dispatch(setNotifications(response.data));  // Store notifications in Redux
+      } catch (err) {
+        setError('Failed to load notifications.');
+      }
+    };
+  
     fetchUserProfile();
-  }, []);
+  }, [dispatch]); // Ensure Redux state is updated when the component loads  
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -98,6 +116,11 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
+
+      <div className="relative">
+        <NotificationBell />
+      </div>
+
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Welcome, {user?.name}</h1>
 
