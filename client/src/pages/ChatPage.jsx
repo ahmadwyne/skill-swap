@@ -1,3 +1,5 @@
+// src/pages/ChatPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
@@ -38,19 +40,33 @@ const ChatPage = () => {
     fetchConnections();
   }, [sessionId]);
 
-  // Set up Socket.io connection
+  // Set up Socket.io connection (only once)
   useEffect(() => {
-    const socketIo = io('http://localhost:5000');
-    setSocket(socketIo);
-
-    socketIo.on('receive_message', (data) => {
-      setMessages((prevMessages) => [...prevMessages, data]);
+    const socketIo = io('http://localhost:5000/sessions', {
+      transports: ['websocket'],  // Ensure websocket transport is being used
+      query: { sessionId }, // Pass sessionId as part of the connection URL
     });
 
+    // Listen for incoming messages
+    socketIo.on('receive_message', (data) => {
+      console.log('Received new message:', data);  // Log to verify message is being received
+
+      // Update the state with the new message (use the previous state to ensure the UI updates)
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, data];
+        console.log('Updated Messages:', updatedMessages);
+        return updatedMessages;
+      });
+    });
+
+    // Store socket instance in state
+    setSocket(socketIo);
+
+    // Cleanup: disconnect the socket when the component is unmounted or when `useEffect` is cleaned up
     return () => {
       socketIo.disconnect();
     };
-  }, []);
+  }, [sessionId]);  // Empty dependency array ensures this runs only once when the component mounts
 
   // Fetch messages for the selected connection
   useEffect(() => {
@@ -80,22 +96,36 @@ const ChatPage = () => {
   // Send a message
   const handleSendMessage = () => {
     if (newMessage.trim() === '') return;
-
+  
     const token = localStorage.getItem('token');
-    const messageData = { sessionId: selectedConnection._id, content: newMessage };
-
-    // Emit message via Socket.io
-    socket.emit('send_message', messageData);
-
-    // Save the message to the backend
-    axios.post('http://localhost:5000/api/sessions/message', messageData, {
+    const userData = JSON.parse(localStorage.getItem('user')); // assuming user info is stored
+    const messageData = {
+      sessionId: selectedConnection._id,
+      content: newMessage,
+      senderId: {
+        name: userData?.name || 'Me',
+        id: userData?._id || 'unknown',
+      }
+    };
+  
+    // ✅ Emit message to server
+    socket.emit('send_message', {
+      sessionId: selectedConnection._id,
+      content: newMessage,
+    });
+  
+    // ✅ Store message in backend
+    axios.post('http://localhost:5000/api/sessions/message', {
+      sessionId: selectedConnection._id,
+      content: newMessage
+    }, {
       headers: { 'x-auth-token': token },
     }).then(() => {
       setNewMessage('');
     }).catch((err) => {
       console.error('Error sending message:', err);
     });
-  };
+  };  
 
   return (
     <div className="chat-page min-h-screen bg-gray-50 flex flex-col">
@@ -131,11 +161,15 @@ const ChatPage = () => {
             <>
               <h2 className="text-2xl font-semibold mb-4">Chat with {selectedConnection.userId1.name}</h2>
               <div className="messages-container bg-white p-4 rounded-lg shadow-lg mb-6">
-                {messages.map((msg, index) => (
-                  <div key={index} className="message">
-                    <p><strong>{msg.senderId?.name || 'Unknown'}: </strong>{msg.content}</p>
-                  </div>
-                ))}
+                {messages.length > 0 ? (
+                  messages.map((msg, index) => (
+                    <div key={index} className="message">
+                      <p><strong>{msg.senderId?.name || 'Unknown'}: </strong>{msg.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p>No messages yet</p> 
+                )}
               </div>
 
               <div className="message-input">

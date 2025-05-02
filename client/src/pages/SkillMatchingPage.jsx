@@ -58,18 +58,32 @@ const SkillMatchingPage = () => {
       alert('Please select a date and time for the session.');
       return;
     }
-
+  
     try {
-      await axios.post(
+      // Step 1: Send session request
+      const sessionResponse = await axios.post(
         'http://localhost:5000/api/sessions/request',
         { userId2: userId, sessionDate, sessionTime },
         { headers: { 'x-auth-token': token } }
       );
+  
+      // Step 2: Create a notification for the recipient user
+      await axios.post(
+        'http://localhost:5000/api/notifications/send', // Notification API
+        {
+          userId, // User receiving the session request
+          message: `You have a new session request for ${sessionDate} at ${sessionTime}`,
+          type: 'session_request', // Type of notification
+        },
+        { headers: { 'x-auth-token': token } }
+      );
+  
       alert('Session request sent');
     } catch (err) {
       console.error('Error sending session request:', err);
+      alert('Error sending session request');
     }
-  };
+  };    
 
   return (
     <div className="min-h-screen bg-gray-50">

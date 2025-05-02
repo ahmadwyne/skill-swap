@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,28 +9,35 @@ const socketIo = require('socket.io');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const matchRoutes = require('./routes/matchRoutes');
-const sessionRoutes = require('./routes/sessionRoutes');  // Your session routes
-const { setSocketIO } = require('./controllers/sessionController');  // Import the setSocketIO function
-const { setSocket } = require('./controllers/notificationController');
+const sessionRoutes = require('./routes/sessionRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const { setSocketIO: setSessionSocketIO } = require('./controllers/sessionController');
+const { setSocket: setNotificationSocketIO } = require('./controllers/notificationController');
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);  // Create the HTTP server using Express
+const server = http.createServer(app);
+
+// ✅ Create Socket.IO instance ONCE
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:5173',  // Allow requests from your React app
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
-    credentials: true,  // Allow cookies if needed
+    credentials: true,
   },
 });
 
-// Set the io instance in both session and notification controllers
-setSocketIO(io);  // Set io for session messaging
-setSocket();      // Set io for notifications
+// ✅ Create namespaces from single instance
+const sessionSocket = io.of('/sessions');
+const notificationSocket = io.of('/notifications');
 
-// Middleware
+// Pass the socket instances to controllers
+setSessionSocketIO(sessionSocket);
+setNotificationSocketIO(notificationSocket);
+
+// Express Middleware
 app.use(express.json());
 app.use(cors());
 
@@ -44,23 +50,34 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/matches', matchRoutes);
-app.use('/api/sessions', sessionRoutes);  // Ensure this is properly linked
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log('A user connected');
+// ✅ Session namespace handling
+sessionSocket.on('connection', (socket) => {
+  console.log('A user connected to session socket');
+
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log('A user disconnected from session socket');
   });
 });
 
-// Simple route to test if server is working
+// ✅ Notification namespace handling
+notificationSocket.on('connection', (socket) => {
+  console.log('A user connected to notification socket');
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected from notification socket');
+  });
+});
+
+// Default route
 app.get('/', (req, res) => {
   res.send('SkillSwap API is running');
 });
 
-// Server
+// Start the server
 const port = process.env.PORT || 5000;
 server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
