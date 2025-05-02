@@ -29,7 +29,7 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className="absolute top-16 right-5">
+    <div>
       {/* Bell Icon */}
       <button className="relative text-gray-700" onClick={toggleDropdown}>
         <i className="fas fa-bell text-5xl"></i>

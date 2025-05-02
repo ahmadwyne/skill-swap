@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/navbar/Navbar';
 import NotificationBell from '../components/NotificationBell';
+import ProfileCard from '../components/ProfileCard';  // Import ProfileCard
 import { useNavigate } from 'react-router-dom';
 import { FiEdit, FiCalendar, FiClock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -139,12 +140,38 @@ const ProfilePage = () => {
   const handleStartChat = id => navigate(`/chat/${id}`);
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
+    <div className="min-h-screen bg-gray-50 relative"> {/* Add relative positioning here */}
+      {/* Navbar */}
       <Navbar />
-      <div className="absolute top-4 right-4">
-        <NotificationBell />
+
+      {/* Profile and Notification Section */}
+      <div className="flex justify-between items-start max-w-screen-md mx-auto p-8 bg-transparent mt-8">
+        {/* Profile Card */}
+        <div className="w-3/4">
+          {user && <ProfileCard user={user} />}  {/* Display ProfileCard */}
+        </div>
+
+        {/* Notification and Profile Settings Card */}
+        <div className="w-1/8 flex flex-col items-center absolute top-24 right-6 z-50"> {/* Adjusted width to 1/8 */}
+          {/* Card containing the profile icon and notification bell */}
+          <div className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center w-full h-16"> {/* Adjusted height as needed */}
+            <div className="flex items-center space-x-4 w-full justify-between">
+              {/* Notification Bell */}
+              <NotificationBell />
+              
+              {/* Profile Icon */}
+              <img
+                onClick={() => navigate('/profile-settings')}
+                src={user?.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}` : '/default-avatar.png'}
+                alt="Profile"
+                className="w-12 h-12 rounded-full border cursor-pointer hover:ring-2 hover:ring-blue-400 transition"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Profile Info and Skills Info */}
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">
           Welcome, {user?.name || 'User'}
@@ -189,7 +216,7 @@ const ProfilePage = () => {
                 )}
               </div>
             </div>
-
+            
             <div>
               <p className="text-2xl font-medium text-gray-700 mb-2 text-left">
                 Skills You Want to Learn:
