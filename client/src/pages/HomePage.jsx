@@ -1,57 +1,64 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import bgImage from "../assets/auth-bg.jpg";
-import { motion } from 'framer-motion';
 import { LogIn, UserPlus } from 'lucide-react';
-
+import Footer from "../components/footer/Footer";
+import './Home.css';
+import bgImage from '../assets/auth-bg.jpg';
 
 const Home = () => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 overflow-hidden">
+    <div
+      className="home-hero"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundAttachment: 'fixed',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="overlay" />
 
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={bgImage}
-          alt="Background"
-          className="w-full h-full object-cover opacity-60"
-        />
-      </div>
+      <div className="hero-content">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+            Skill Swap
+          </h1>
+<h1 className="hero-title text-white">
+  – Connect, Learn, and Grow
+</h1>
 
-      {/* Content Box */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-10 md:p-14 max-w-xl text-center"
-      >
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent mb-4">
-          Skill Swap
-        </h1>
-        <p className="text-gray-700 text-lg">Empower your skills. Connect. Grow.</p>
-        <p className="text-gray-600 text-sm mb-8">
-        Skill Swap, A platform where learners meet learners—share, teach, and grow together.
+        <p className="hero-subtitle">
+          A platform where learners meet learners. <br />
+          Share knowledge, teach others, and elevate your skills together.
         </p>
 
-        <motion.div whileHover={{ scale: 1.02 }}>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Get Started</h2>
+        <div className="cta-buttons">
+          <Link to="/login" className="btn primary">
+            <LogIn size={20} /> <span>Login</span>
+          </Link>
+          <Link to="/register" className="btn secondary">
+            <UserPlus size={20} /> <span>Register</span>
+          </Link>
+        </div>
+      </div>
 
-          <div className="flex flex-col space-y-4">
-            <Link
-              to="/login"
-              className="flex items-center justify-center bg-blue-600 text-white py-3 rounded-full hover:bg-blue-700 transition duration-300 space-x-2"
-            >
-              <LogIn size={20} /> <span>Login</span>
-            </Link>
-            <Link
-              to="/register"
-              className="flex items-center justify-center bg-blue-600 text-white py-3 rounded-full hover:bg-blue-700 transition duration-300 space-x-2"
-            >
-              <UserPlus size={20} /> <span>Register</span>
-            </Link>
+      <section className="glass-panel">
+        <div className="info-grid">
+          <div>
+            <h3>Discover Skills</h3>
+            <p>Explore a wide range of topics offered by peers across the globe.</p>
           </div>
-        </motion.div>
-      </motion.div>
+          <div>
+            <h3>Find Your Match</h3>
+            <p>Let smart matching pair you with ideal learning partners.</p>
+          </div>
+          <div>
+            <h3>Grow Together</h3>
+            <p>Teach what you know, learn what you love—side by side.</p>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };
