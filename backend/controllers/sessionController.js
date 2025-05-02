@@ -4,10 +4,10 @@ const Message = require('../models/Message');  // Import Message model
 const User = require('../models/User');  // Import User model
 
 // Pass io to the controller to enable real-time messaging
-let io;  // Declare io at the top
+let sessionSocket;  // Declare io at the top
 
 const setSocketIO = (socketIO) => {
-  io = socketIO;  // Set io from server.js
+  sessionSocket = socketIO;  // Set io from server.js
 };
 
 // Create a new session request
@@ -93,22 +93,26 @@ const getAcceptedSessions = async (req, res) => {
 };
 
 // Send a new message in a session
+// Send a new message in a session
 const sendMessage = async (req, res) => {
-  const { sessionId, content } = req.body;  // Get sessionId and message content from request
-    
+  const { sessionId, content } = req.body;
+
+  console.log('Received sessionId:', sessionId);  // Log sessionId
+  console.log('Received message content:', content);  // Log message content
+
   if (!sessionId || !content) {
     return res.status(400).json({ msg: 'Session ID and message content are required' });
   }
-  
+
   try {
     const session = await Session.findById(sessionId);  // Check if the session exists
     if (!session) {
-      return res.status(404).json({ msg: 'Session not found' });
+      return res.status(400).json({ code: 1, message: 'Session ID unknown' });
     }
-  
+
     // Determine the other user in the session
     const receiverId = session.userId1.toString() === req.user.id ? session.userId2 : session.userId1;
-  
+
     // Create a new message
     const newMessage = new Message({
       sessionId,
@@ -116,26 +120,28 @@ const sendMessage = async (req, res) => {
       receiverId: receiverId,  // The other user in the session
       content,
     });
-  
+
     // Save the message
     await newMessage.save();
-  
+
     // Fetch the sender and receiver details
     const sender = await User.findById(req.user.id);  // Get sender details
     const receiver = await User.findById(receiverId);  // Get receiver details
-  
+
     if (!sender || !receiver) {
       return res.status(404).json({ msg: 'User not found' });
     }
-  
+
     // Emit message with full user details (sender and receiver)
-    io.emit('receive_message', {
+    sessionSocket.emit('receive_message', {
       content,
       senderId: { name: sender.name, id: sender._id },
       receiverId: { name: receiver.name, id: receiver._id },
       sessionId: sessionId,
     });
-  
+    console.log('Emitting message to frontend:', { content, sessionId }); // Log to verify emission
+
+
     res.json({ msg: 'Message sent successfully', message: newMessage });
   } catch (err) {
     console.error('Error sending message:', err.message);
@@ -160,4 +166,4 @@ const getMessages = async (req, res) => {
   }
 };  
 
-module.exports = { sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io
+module.exports = { io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io

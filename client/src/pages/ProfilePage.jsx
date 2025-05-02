@@ -5,6 +5,9 @@ import Navbar from '../components/navbar/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { FiEdit, FiCalendar, FiClock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationBell from '../components/NotificationBell';
+import { useDispatch } from 'react-redux';
+import { setNotifications } from '../redux/slices/notificationSlice';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +22,7 @@ const ProfilePage = () => {
   const [acceptedSessions, setAcceptedSessions] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Formatters
   const formatDate = iso =>
@@ -34,20 +38,35 @@ const ProfilePage = () => {
   useEffect(() => {
     (async () => {
       const token = localStorage.getItem('token');
-      if (!token) return;
-      try {
-        const { data } = await axios.get('http://localhost:5000/api/users/profile', {
-          headers: { 'x-auth-token': token }
-        });
-        setUser(data);
-        setSkillsToTeach(data.skillsToTeach);
-        setSkillsToLearn(data.skillsToLearn);
-      } catch {
-        setError('Failed to load profile data.');
+      if (token) {
+        try {
+          const response = await axios.get('http://localhost:5000/api/users/profile', {
+            headers: { 'x-auth-token': token },
+          });
+          setUser(response.data);
+          setSkillsToTeach(response.data.skillsToTeach.join(','));
+          setSkillsToLearn(response.data.skillsToLearn.join(','));
+          fetchNotifications(response.data._id);  // Fetch notifications for the current user
+        } catch (err) {
+          setError('Failed to load profile data.');
+        }
       }
-    })();
-  }, []);
-
+    };
+  
+    const fetchNotifications = async (userId) => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await axios.get(`http://localhost:5000/api/notifications/${userId}`, {
+          headers: { 'x-auth-token': token },
+        });
+        dispatch(setNotifications(response.data));  // Store notifications in Redux
+      } catch (err) {
+        setError('Failed to load notifications.');
+      }
+    };
+  
+    fetchUserProfile();
+  }, [dispatch]); // Ensure Redux state is updated when the component loads  
   // Fetch sessions
   useEffect(() => {
     (async () => {
@@ -123,7 +142,29 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 relative">
       <Navbar />
+      <div className="relative">
+        <NotificationBell />
+      </div>
 
+      <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
+        <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Welcome, {user?.name}</h1>
+
+        {success && <div className="bg-green-500 text-white p-2 rounded mb-4">{success}</div>}
+        {error && <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>}
+
+        {/* Profile Info */}
+        <div className="space-y-6">
+          <div>
+            <label htmlFor="skillsToTeach" className="block text-lg font-medium text-gray-700">Skills You Can Teach</label>
+            <input
+              type="text"
+              id="skillsToTeach"
+              value={skillsToTeach}
+              onChange={(e) => setSkillsToTeach(e.target.value)}
+              placeholder="Enter skills to teach (comma separated)"
+              className="w-full p-4 mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            />
+          </div>
       {/* Main content */}
       <div className={isModalOpen ? 'pointer-events-none' : ''}>
         <div className="max-w-7xl mx-auto p-8">
