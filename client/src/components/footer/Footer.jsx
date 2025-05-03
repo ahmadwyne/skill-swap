@@ -1,5 +1,4 @@
-// src/components/Footer.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 
@@ -8,21 +7,24 @@ const Footer = () => {
     { name: "Home", to: "/" },
     { name: "Profile", to: "/profile" },
     { name: "Login", to: "/login" },
-    { name: "Signup", to: "/signup" },
+    { name: "Signup", to: "/register" },
     { name: "Chat", to: "/chat" },
     { name: "Resources", to: "/resources" },
     { name: "Skill Matching", to: "/skill-matching" },
-    { name: "Settings", to: "/settings" },
+    { name: "Settings", to: "/profile-settings" },
     { name: "Sessions", to: "/sessions" },
-    // About Us now points to /about-us
     { name: "About Us", to: "/about-us" },
   ];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <footer className="bg-white/80 backdrop-blur border-t border-blue-200 shadow-inner text-blue-900">
       <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm md:text-base">
 
-        {/* Column 1 - Brand */}
+        {/* Brand */}
         <div>
           <h2 className="text-xl font-bold text-indigo-600 mb-3">Skill Swap</h2>
           <p className="text-gray-600">
@@ -30,7 +32,7 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Column 2 - Navigation Links */}
+        {/* Quick Links */}
         <div>
           <h3 className="font-semibold text-gray-700 mb-2">Quick Links</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -46,9 +48,9 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Column 3 - Social */}
+        {/* Social */}
         <div className="flex flex-col">
-          <h3 className="font-semibold text-gray-700 mb-2">Connect with us</h3>
+          <h3 className="text-left font-semibold text-gray-700 mb-2">Connect with us</h3>
           <div className="flex space-x-4 mt-2 items-center">
             <a
               href="https://github.com"

@@ -1,9 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { LogIn, UserPlus } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { LogIn, UserPlus } from "lucide-react";
 import Footer from "../components/footer/Footer";
-import './Home.css';
-import bgImage from '../assets/auth-bg.jpg';
+import "./Home.css";
+import bgImage from "../assets/auth-bg.jpg";
 
 const Home = () => {
   return (
@@ -11,20 +11,18 @@ const Home = () => {
       className="home-hero"
       style={{
         backgroundImage: `url(${bgImage})`,
-        backgroundAttachment: 'fixed',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <div className="overlay" />
 
       <div className="hero-content">
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
-            Skill Swap
-          </h1>
-<h1 className="hero-title text-white">
-  – Connect, Learn, and Grow
-</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+          Skill Swap
+        </h1>
+        <h1 className="hero-title text-white">– Connect, Learn, and Grow</h1>
 
         <p className="hero-subtitle">
           A platform where learners meet learners. <br />
@@ -45,7 +43,9 @@ const Home = () => {
         <div className="info-grid">
           <div>
             <h3>Discover Skills</h3>
-            <p>Explore a wide range of topics offered by peers across the globe.</p>
+            <p>
+              Explore a wide range of topics offered by peers across the globe.
+            </p>
           </div>
           <div>
             <h3>Find Your Match</h3>
@@ -57,7 +57,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );
