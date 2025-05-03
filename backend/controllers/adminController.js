@@ -106,7 +106,7 @@ const getProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      image: user.image || 'https://placehold.co/150x150?text=Admin',
+      profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
       createdAt: user.createdAt
     });
   } catch (err) {
@@ -124,12 +124,12 @@ const updateProfile = async (req, res) => {
     if (req.body.name) user.name = req.body.name;
 
     // Support direct image URL from frontend
-    if (req.body.image) {
-      user.image = req.body.image;
+    if (req.body.profilePicture) {
+      user.profilePicture = req.body.profilePicture;
     }
     // OR use uploaded file
     else if (req.file) {
-      user.image = `/uploads/${req.file.filename}`;
+      user.profilePicture = `/uploads/${req.file.filename}`;
     }
 
     await user.save();
@@ -141,7 +141,7 @@ const updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        image: user.image || 'https://placehold.co/150x150?text=Admin',
+        profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
         createdAt: user.createdAt
       }
     });
