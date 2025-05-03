@@ -1,12 +1,12 @@
 
 const express = require('express');
 const router = express.Router();
-const verifyToken = require('../middlewares/auth');
+const { verifyToken, ensureAdmin } = require('../middlewares/auth');
 const adminCtrl = require('../controllers/adminController');
 const upload = require('../middlewares/upload');
 
 // Protect all admin routes
-router.use(verifyToken);
+router.use(verifyToken, ensureAdmin);
 
 //User management routes
 // Get all users

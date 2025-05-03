@@ -20,15 +20,7 @@ const AdminNavbar = ({ adminName, profileImage, onToggleSidebar }) => {
           className="w-10 h-10 rounded-full object-cover border-2 border-white"
         /> */}
         <img
-          src={
-            // if it’s already a full URL (you could detect blob: or http:)
-            profileImage && (profileImage.startsWith('http') || profileImage.startsWith('blob:'))
-              ? profileImage
-              // otherwise assume it’s just the filename
-              : profileImage
-                ? `/uploads/${profileImage}`
-                : 'https://placehold.co/40x40?text=Admin'
-          }
+          src={profileImage}
           alt="Admin"
           className="w-10 h-10 rounded-full object-cover border-2 border-white"
         />

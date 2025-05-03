@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages } = require('../controllers/sessionController');
-const verifyToken = require('../middlewares/auth');
+const {verifyToken} = require('../middlewares/auth');
 
 // Send session request
 router.post('/request', verifyToken, sendSessionRequest);
