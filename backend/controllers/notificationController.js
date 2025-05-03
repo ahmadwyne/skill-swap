@@ -11,6 +11,30 @@ const setSocket = (socketIO) => {
   notificationSocket = socketIO;  // Set the notification socket
 };
 
+// src/controllers/notificationController.js
+const cron = require('node-cron');
+
+cron.schedule('* * * * *', async () => {  // This runs every minute
+  const now = new Date();
+
+  const upcomingSessions = await Session.find({
+    sessionTime: { $gt: now },  // Ensure the session is in the future
+  });
+
+  upcomingSessions.forEach(async (session) => {
+    // Send reminder 1 hour before the session time
+    if (new Date(session.sessionTime) - now <= 60 * 60 * 1000) {  // 1 hour before session
+      const message = `Reminder: You have a scheduled session with ${session.userId1.name} at ${session.sessionTime}.`;
+
+      await sendReminderNotification({
+        sessionId: session._id,
+        message,
+        reminderTime: session.sessionTime,  // Schedule reminder 1 hour before session
+      });
+    }
+  });
+});
+
 // Create a new notification (e.g., when a session request is made or a reminder)
 const sendNotification = async (req, res) => {
   const { userId, message, type } = req.body;
@@ -94,4 +118,74 @@ const markAllAsRead = async (req, res) => {
   }
 };
 
-module.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, setSocket };  // Export setSocket
+// src/controllers/notificationController.js
+
+// Send new meeting scheduled notification
+const sendNewMeetingScheduledNotification = async (sessionId, message) => {
+  try {
+    const session = await Session.findById(sessionId).populate('userId1 userId2');
+    if (!session) {
+      return res.status(404).json({ msg: 'Session not found' });
+    }
+
+    const sender = session.userId1;
+    const receiver = session.userId2;
+
+    // Send notifications to both users
+    await sendNotification(sender._id, message, 'new_meeting_scheduled');
+    await sendNotification(receiver._id, message, 'new_meeting_scheduled');
+
+    // Emit via socket
+    if (notificationSocket) {
+      notificationSocket.emit('new_notification', {
+        userId: sender._id,
+        message,
+        type: 'new_meeting_scheduled',
+      });
+      notificationSocket.emit('new_notification', {
+        userId: receiver._id,
+        message,
+        type: 'new_meeting_scheduled',
+      });
+    }
+
+  } catch (err) {
+    console.error('Error sending new meeting scheduled notification:', err.message);
+  }
+};
+
+// Send reminder notification (e.g., 1 hour before the session)
+const sendReminderNotification = async (sessionId, message, reminderTime) => {
+  try {
+    const session = await Session.findById(sessionId).populate('userId1 userId2');
+    if (!session) {
+      return res.status(404).json({ msg: 'Session not found' });
+    }
+
+    const sender = session.userId1;
+    const receiver = session.userId2;
+
+    // Send reminder to both users
+    await sendNotification(sender._id, message, 'reminder');
+    await sendNotification(receiver._id, message, 'reminder');
+
+    // Emit via socket
+    if (notificationSocket) {
+      notificationSocket.emit('new_notification', {
+        userId: sender._id,
+        message,
+        type: 'reminder',
+      });
+      notificationSocket.emit('new_notification', {
+        userId: receiver._id,
+        message,
+        type: 'reminder',
+      });
+    }
+
+  } catch (err) {
+    console.error('Error sending reminder notification:', err.message);
+  }
+};
+
+module.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, setSocket, sendReminderNotification, sendNewMeetingScheduledNotification };  // Export setSocket

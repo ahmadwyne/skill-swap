@@ -1,3 +1,4 @@
+// src/routes/sessionRoutes.js
 const express = require('express');
 const router = express.Router();
 const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages } = require('../controllers/sessionController');

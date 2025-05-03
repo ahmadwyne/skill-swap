@@ -192,4 +192,36 @@ const getMessages = async (req, res) => {
   }
 };  
 
-module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io
+// src/controllers/sessionController.js
+
+// Schedule a new session
+const scheduleSession = async (req, res) => {
+  const { sessionId, newMeetingDate, newMeetingTime } = req.body;
+  
+  if (!sessionId || !newMeetingDate || !newMeetingTime) {
+    return res.status(400).json({ msg: 'SessionId, newMeetingDate, and newMeetingTime are required' });
+  }
+
+  try {
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ msg: 'Session not found' });
+    }
+
+    // Update the session with the new scheduled date and time
+    session.newMeetingDate = new Date(newMeetingDate);  // Update new meeting date
+    session.newMeetingTime = newMeetingTime;  // Update new meeting time
+    await session.save();
+
+    // Send the scheduled session notification
+    const message = `You have a new meeting scheduled for ${newMeetingDate} at ${newMeetingTime}`;
+    sendNewMeetingScheduledNotification(sessionId, message);  // Trigger notification for both users
+
+    res.json({ msg: 'Session scheduled successfully', session });
+  } catch (err) {
+    console.error('Error scheduling session:', err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO, scheduleSession };  // Export setSocketIO to set io
