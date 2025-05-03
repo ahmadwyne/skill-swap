@@ -25,6 +25,8 @@ const Navbar = () => {
               <Link to="/skill-matching" className="hover:underline">Skill Matching</Link>
               <Link to="/chat" className="hover:underline">Chat</Link>
               <Link to="/sessions" className="hover:underline">Sessions</Link>
+              <Link to="/about-us" className="hover:underline">About Us</Link>
+              
               {isAdmin && <Link to="/admin" className="hover:underline">Admin Dashboard</Link>}
               <button
                 onClick={handleLogout}
