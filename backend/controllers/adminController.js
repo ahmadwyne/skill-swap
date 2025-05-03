@@ -30,7 +30,17 @@ const addUser = async (req, res) => {
     if (await User.exists({ email })) {
       return res.status(400).json({ message: 'Email already in use.' });
     }
-    const user = new User({ name, email, password, role: role || 'user' });
+    // 1️⃣ Hash password just like in your normal register flow
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 2️⃣ Create user with hashed password
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'user'
+    });
     await user.save();
     res.status(201).json({
       message: 'User created',
@@ -129,7 +139,7 @@ const updateProfile = async (req, res) => {
     }
     // OR use uploaded file
     else if (req.file) {
-      user.profilePicture = `/uploads/${req.file.filename}`;
+      user.profilePicture = req.file.filename;
     }
 
     await user.save();
@@ -141,7 +151,8 @@ const updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
+        // profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
+        profilePicture: user.profilePicture || null,
         createdAt: user.createdAt
       }
     });

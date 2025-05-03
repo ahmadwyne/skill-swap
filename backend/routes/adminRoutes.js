@@ -1,8 +1,9 @@
 
 const express = require('express');
 const router = express.Router();
-const  verifyToken  = require('../middlewares/auth');
+const verifyToken = require('../middlewares/auth');
 const adminCtrl = require('../controllers/adminController');
+const upload = require('../middlewares/upload');
 
 // Protect all admin routes
 router.use(verifyToken);
@@ -27,8 +28,17 @@ router.patch('/reports/:id/resolve', adminCtrl.resolveReport);
 router.get('/analytics', adminCtrl.getAnalytics);
 
 // Profile section
+// router.get('/profile', adminCtrl.getProfile);
+// router.put('/profile', adminCtrl.updateProfile);
+// router.put('/profile/password', adminCtrl.changePassword);
+// Profile section
 router.get('/profile', adminCtrl.getProfile);
-router.put('/profile', adminCtrl.updateProfile);
+// parse multipart/form-data (for file + name)
+router.put(
+    '/profile',
+    upload.single('profilePicture'),
+    adminCtrl.updateProfile
+);
 router.put('/profile/password', adminCtrl.changePassword);
 
 module.exports = router;

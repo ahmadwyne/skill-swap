@@ -148,7 +148,7 @@ const AdminProfile = () => {
               </td>
             </tr>
 
-            {/* Profile Picture Preview */}
+            {/* Profile Picture Preview
             {form.profilePicture && (
               <tr>
                 <td colSpan="2" className="pt-4 text-center">
@@ -159,7 +159,25 @@ const AdminProfile = () => {
                   />
                 </td>
               </tr>
+            )} */}
+            {form.profilePicture && (
+              <tr>
+                <td colSpan="2" className="pt-4 text-center">
+                  <img
+                    src={
+                      // if user just picked a file, form.profilePicture is a blob:// URL
+                      profileImage
+                        ? form.profilePicture
+                        // otherwise it's the filename stored in DB
+                        : `http://localhost:5000/uploads/${form.profilePicture}`
+                    }
+                    alt="Profile Preview"
+                    className="w-20 h-20 rounded-full object-cover mx-auto"
+                  />
+                </td>
+              </tr>
             )}
+
 
             {/* Change Password Section */}
             <tr>
