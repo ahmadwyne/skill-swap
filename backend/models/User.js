@@ -1,4 +1,5 @@
-// models/User.js
+// backend/models/User.js
+
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -16,11 +17,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   skillsToTeach: {
-    type: [String], // Array of skills user can teach
+    type: [String],
     default: [],
   },
   skillsToLearn: {
-    type: [String], // Array of skills user wants to learn
+    type: [String],
     default: [],
   },
   role: {
@@ -40,7 +41,10 @@ const UserSchema = new mongoose.Schema({
   status: { 
     type: String, 
     default: "" 
-  }
+  },
+}, {
+  timestamps: true    // adds createdAt & updatedAt
+  
 });
 
 module.exports = mongoose.model('User', UserSchema);

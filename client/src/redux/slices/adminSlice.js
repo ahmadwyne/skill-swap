@@ -1,34 +1,3 @@
-// // src/redux/slices/adminSlice.js
-// import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import axios from 'axios';
-
-// // ── Create an Axios instance pointed at your backend ─────────────
-// const API = axios.create({
-//       baseURL: 'http://localhost:5000',   // ← Your Express server
-//     });
-
-// // ─── Attach JWT to every request ─────────────────────────────
-// API.interceptors.request.use(config => {
-//     const token = localStorage.getItem('token');
-//     if (token) {
-//       config.headers['x-auth-token'] = token;
-//     }
-//     return config;
-//   });
-
-// // ============================
-// // Thunks (Async Actions)
-// // ============================
-
-// // Fetch all users
-// export const fetchUsers = createAsyncThunk('admin/fetchUsers', async (_, thunkAPI) => {
-//   try {
-//     const response = await API.get('/api/admin/users');
-//     return response.data;
-//   } catch (err) {
-//     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch users');
-//   }
-// });
 
 // src/redux/slices/adminSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';

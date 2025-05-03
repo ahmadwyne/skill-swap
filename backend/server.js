@@ -1,10 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path'); 
+const express    = require('express');
+const mongoose   = require('mongoose');
+const cors       = require('cors');
+const dotenv     = require('dotenv');
+const http       = require('http');
+const socketIo   = require('socket.io');
+const path       = require('path');
+const multer     = require('multer');
+const fs         = require('fs');
+const bcrypt = require('bcryptjs');
+const User   = require('./models/User');
 
 // Import routes and controllers
 const authRoutes = require('./routes/authRoutes');
@@ -18,11 +22,11 @@ const adminRoutes = require('./routes/adminRoutes');  // ← Admin dashboard rou
 
 dotenv.config();
 
-const app = express();
+const app    = express();
 const server = http.createServer(app);
 
 // ✅ Create Socket.IO instance ONCE
-const io = socketIo(server, {
+const io     = socketIo(server, {
   cors: {
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
@@ -32,14 +36,27 @@ const io = socketIo(server, {
 });
 
 // ✅ Create namespaces from single instance
-const sessionSocket = io.of('/sessions');
+const sessionSocket      = io.of('/sessions');
 const notificationSocket = io.of('/notifications');
 
 // Pass the socket instances to controllers
 setSessionSocketIO(sessionSocket);
 setNotificationSocketIO(notificationSocket);
 
-// Express Middleware
+// ─── MULTER SETUP ─────────────────────────────────────────────────
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDir),
+  filename:     (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, $`{req.user?.id || 'admin'}-${Date.now()}${ext}`);
+  }
+});
+const upload = multer({ storage });
+
+// ─── MIDDLEWARE ───────────────────────────────────────────────────
 app.use(express.json());
 app.use(cors());
 
@@ -47,9 +64,34 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.log('Error connecting to MongoDB:', err));
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(async () => {
+    console.log('Connected to MongoDB');
+
+    const {
+      ADMIN_EMAIL,
+      ADMIN_PASSWORD,
+      ADMIN_NAME,
+      ADMIN_PIC_URL
+    } = process.env;
+
+    let admin = await User.findOne({ email: ADMIN_EMAIL });
+    if (!admin) {
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(ADMIN_PASSWORD, salt);
+      admin = new User({
+        name:           ADMIN_NAME || 'Administrator',
+        email:          ADMIN_EMAIL,
+        password:       hash,
+        role:           'admin',
+        profilePicture: ADMIN_PIC_URL || ''
+      });
+      await admin.save();
+      console.log('🚀 Admin user seeded:', ADMIN_EMAIL);
+    }
+  })
+  .catch(err => console.error('Error connecting to MongoDB:', err));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -62,26 +104,27 @@ app.use('/api/admin', adminRoutes);  // ← Mount Admin Dashboard routes
 // ✅ Session namespace handling
 sessionSocket.on('connection', (socket) => {
   console.log('A user connected to session socket');
-
+  
   socket.on('disconnect', () => {
     console.log('A user disconnected from session socket');
   });
 });
-
+  
 // ✅ Notification namespace handling
 notificationSocket.on('connection', (socket) => {
   console.log('A user connected to notification socket');
-  
+    
   socket.on('disconnect', () => {
     console.log('A user disconnected from notification socket');
   });
 });
 
+
 // Default route
 app.get('/', (req, res) => {
   res.send('SkillSwap API is running');
 });
-
+  
 // Start the server
 const port = process.env.PORT || 5000;
 server.listen(port, () => {

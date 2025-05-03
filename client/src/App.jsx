@@ -1,3 +1,4 @@
+
 // // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage            from './pages/HomePage';
@@ -11,6 +12,7 @@ import AdminDashboardPage  from './pages/AdminDashboardPage';  // Must use <Outl
 import UserManagement      from './components/admin/UserManagement';
 import ReportManagement    from './components/admin/ReportManagement';
 import AnalyticsOverview   from './components/admin/AnalyticsOverview';
+import AdminProfile from './pages/AdminProfilePage'; // Admin Profile Page
 import PrivateRoute        from './components/common/PrivateRoute';
 
 import './App.css';
@@ -59,6 +61,7 @@ function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="reports" element={<ReportManagement />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
     </Router>
