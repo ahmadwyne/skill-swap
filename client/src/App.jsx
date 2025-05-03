@@ -12,17 +12,23 @@ import UserManagement      from './components/admin/UserManagement';
 import ReportManagement    from './components/admin/ReportManagement';
 import AnalyticsOverview   from './components/admin/AnalyticsOverview';
 import PrivateRoute        from './components/common/PrivateRoute';
+import AboutUsPage         from './pages/AboutUSPage';
 
 import './App.css';
 
 function App() {
   return (
+    
     <Router>
+      
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* 🆕 About Us Route */}
+        <Route path="/about-us" element={<AboutUsPage />} />
 
         {/* Protected User Routes */}
         <Route
@@ -66,4 +72,3 @@ function App() {
 }
 
 export default App;
-
