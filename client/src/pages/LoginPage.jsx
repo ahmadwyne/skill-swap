@@ -48,6 +48,7 @@ const LoginPage = () => {
         password,
       });
 
+
       const token = response.data.token;
       const decoded = jwtDecode(token)
 
@@ -70,6 +71,7 @@ const LoginPage = () => {
       } else {
         navigate('/profile');
       }
+
     } catch (err) {
       const errorMessage = err.response?.data?.msg || "Something went wrong!";
       dispatch(loginFailure(errorMessage));
@@ -167,7 +169,6 @@ const LoginPage = () => {
                 Register here
               </a>
             </p>
-
           </div>
         </div>
       </motion.div>

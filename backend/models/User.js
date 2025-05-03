@@ -16,11 +16,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // New field for storing a profile picture URL
-  profilePicture: {
-    type: String,
-    default: '',    // you may set a placeholder here
-  },
   skillsToTeach: {
     type: [String],
     default: [],
@@ -34,8 +29,22 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  profilePicture: { 
+    type: String, 
+    default: "" 
+  },
+  socials: {
+    facebook: { type: String, default: '' },
+    twitter: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+  },
+  status: { 
+    type: String, 
+    default: "" 
+  },
 }, {
   timestamps: true    // adds createdAt & updatedAt
+  
 });
 
 module.exports = mongoose.model('User', UserSchema);
