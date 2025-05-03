@@ -2,6 +2,25 @@
 const Session = require('../models/Session');
 const Message = require('../models/Message');  // Import Message model
 const User = require('../models/User');  // Import User model
+const multer = require('multer');
+const path = require('path');
+
+// Configure storage for uploaded files
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads/message-uploads');  // Save files to the 'uploads/message-uploads' folder
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);  // Get the file extension
+    cb(null, `${Date.now()}${ext}`);  // Use timestamp to prevent filename collisions
+  }
+});
+
+// Apply multer middleware to handle file upload
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },  // Max file size is 10MB
+}).single('file');  // Handle single file uploads (make sure 'file' matches the input field name)
 
 // Pass io to the controller to enable real-time messaging
 let sessionSocket;  // Declare io at the top
@@ -93,60 +112,67 @@ const getAcceptedSessions = async (req, res) => {
 };
 
 // Send a new message in a session
-// Send a new message in a session
 const sendMessage = async (req, res) => {
+  console.log('Received sessionId:', req.body.sessionId);  // Log received sessionId
+  console.log('Received content:', req.body.content);  // Log received content
+  console.log('Received file:', req.file);  // Log received file
+  
   const { sessionId, content } = req.body;
 
-  console.log('Received sessionId:', sessionId);  // Log sessionId
-  console.log('Received message content:', content);  // Log message content
-
-  if (!sessionId || !content) {
-    return res.status(400).json({ msg: 'Session ID and message content are required' });
+  if (!sessionId) {
+    return res.status(400).json({ msg: 'Session ID is required' });
   }
 
-  try {
-    const session = await Session.findById(sessionId);  // Check if the session exists
-    if (!session) {
-      return res.status(400).json({ code: 1, message: 'Session ID unknown' });
-    }
-
-    // Determine the other user in the session
-    const receiverId = session.userId1.toString() === req.user.id ? session.userId2 : session.userId1;
-
-    // Create a new message
-    const newMessage = new Message({
-      sessionId,
-      senderId: req.user.id,  // Logged-in user's ID
-      receiverId: receiverId,  // The other user in the session
-      content,
-    });
-
-    // Save the message
-    await newMessage.save();
-
-    // Fetch the sender and receiver details
-    const sender = await User.findById(req.user.id);  // Get sender details
-    const receiver = await User.findById(receiverId);  // Get receiver details
-
-    if (!sender || !receiver) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
-
-    // Emit message with full user details (sender and receiver)
-    sessionSocket.emit('receive_message', {
-      content,
-      senderId: { name: sender.name, id: sender._id },
-      receiverId: { name: receiver.name, id: receiver._id },
-      sessionId: sessionId,
-    });
-    console.log('Emitting message to frontend:', { content, sessionId }); // Log to verify emission
-
-
-    res.json({ msg: 'Message sent successfully', message: newMessage });
-  } catch (err) {
-    console.error('Error sending message:', err.message);
-    res.status(500).send('Server error');
+  // Check if sessionId exists
+  const session = await Session.findById(sessionId);
+  if (!session) {
+    console.error('Session not found:', sessionId);
+    return res.status(400).json({ msg: 'Session ID unknown' });
   }
+
+  let mediaUrl = null;
+  let mediaType = null;
+
+  if (req.file) {
+    // If there's a file uploaded, get the file URL and type
+    mediaUrl = `http://localhost:5000/uploads/message-uploads/${req.file.filename}`;
+    mediaType = req.file.mimetype.startsWith('image') ? 'image' :
+                req.file.mimetype.startsWith('video') ? 'video' :
+                req.file.mimetype.startsWith('audio') ? 'audio' : null;
+  }
+
+  // Determine the other user in the session
+  const receiverId = session.userId1.toString() === req.user.id ? session.userId2 : session.userId1;
+
+  const sender = await User.findById(req.user.id); // Get sender user details
+  const receiver = await User.findById(receiverId); // Get receiver user details
+
+  console.log('sender.name:', sender.name);
+  console.log('receiver.name:', receiver.name);
+
+  // Create a new message
+  const newMessage = new Message({
+    sessionId,
+    senderId: req.user.id,
+    receiverId: receiverId,
+    content,
+    mediaUrl,  // Store the media URL
+    mediaType, // Store the media type (image/video/audio)
+  });
+
+  await newMessage.save();  // Save the message in the database
+
+  // Emit message with media details to the frontend
+  sessionSocket.emit('receive_message', {
+    content,
+    sender: { name: sender.name, id: sender._id }, // Include sender's name and ID
+    receiver: { name: receiver.name, id: receiver._id }, // Include receiver's name and ID
+    sessionId,
+    mediaUrl,  // Emit media URL
+    mediaType, // Emit media type
+  });
+
+  res.json({ msg: 'Message sent successfully', message: newMessage });
 };
 
 // Get all messages for a specific session
@@ -166,4 +192,4 @@ const getMessages = async (req, res) => {
   }
 };  
 
-module.exports = { io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io
+module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO };  // Export setSocketIO to set io

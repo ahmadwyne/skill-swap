@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages } = require('../controllers/sessionController');
+const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages } = require('../controllers/sessionController');
 const verifyToken = require('../middlewares/auth');
 
 // Send session request
@@ -16,7 +16,7 @@ router.get('/pending', verifyToken, getPendingSessions);
 router.get('/accepted', verifyToken, getAcceptedSessions);
 
 // Send message in session
-router.post('/message', verifyToken, sendMessage);
+router.post('/message', verifyToken, upload, sendMessage);  // Apply 'upload' middleware here
 
 // Get messages for a session
 router.get('/message/:sessionId', verifyToken, getMessages);

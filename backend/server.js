@@ -5,8 +5,8 @@ const dotenv     = require('dotenv');
 const http       = require('http');
 const socketIo   = require('socket.io');
 const path       = require('path');
-const multer     = require('multer');
-const fs         = require('fs');
+//const multer     = require('multer');
+//const fs         = require('fs');
 const bcrypt = require('bcryptjs');
 const User   = require('./models/User');
 
@@ -44,17 +44,17 @@ setSessionSocketIO(sessionSocket);
 setNotificationSocketIO(notificationSocket);
 
 // ─── MULTER SETUP ─────────────────────────────────────────────────
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+// const uploadDir = path.join(__dirname, 'uploads');
+// if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename:     (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, $`{req.user?.id || 'admin'}-${Date.now()}${ext}`);
-  }
-});
-const upload = multer({ storage });
+// const storage = multer.diskStorage({
+//   destination: (_req, _file, cb) => cb(null, uploadDir),
+//   filename:     (req, file, cb) => {
+//     const ext = path.extname(file.originalname);
+//     cb(null, $`{req.user?.id || 'admin'}-${Date.now()}${ext}`);
+//   }
+// });
+// const upload = multer({ storage });
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────
 app.use(express.json());
@@ -62,6 +62,9 @@ app.use(cors());
 
 // Serve static files (images) from 'uploads' folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Serve media files from 'message-uploads' folder
+app.use('/uploads/message-uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB connection
 mongoose
@@ -104,6 +107,9 @@ app.use('/api/admin', adminRoutes);  // ← Mount Admin Dashboard routes
 // ✅ Session namespace handling
 sessionSocket.on('connection', (socket) => {
   console.log('A user connected to session socket');
+  
+  const sessionId = socket.handshake.query.sessionId;
+  console.log('Received sessionId:', sessionId);  // Log sessionId here
   
   socket.on('disconnect', () => {
     console.log('A user disconnected from session socket');

@@ -1,8 +1,8 @@
-// src/pages/ChatPage.jsx
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import Navbar from '../components/navbar/Navbar'; // Import Navbar
+import MessageInput from '../components/chat/MessageInput'; // Import MessageInput
 import { useNavigate, useParams } from 'react-router-dom';
 
 const ChatPage = () => {
@@ -10,7 +10,6 @@ const ChatPage = () => {
   const [connections, setConnections] = useState([]); // List of connections
   const [selectedConnection, setSelectedConnection] = useState(null); // Selected connection for chat
   const [messages, setMessages] = useState([]); // List of messages in the current chat
-  const [newMessage, setNewMessage] = useState(''); // New message to send
   const [socket, setSocket] = useState(null); // Socket connection
   const navigate = useNavigate();
 
@@ -41,31 +40,41 @@ const ChatPage = () => {
 
   // Set up Socket.io connection (only once)
   useEffect(() => {
+    if (!sessionId) {
+      console.error("Session ID is undefined.");
+      return;
+    }
+
     const socketIo = io('http://localhost:5000/sessions', {
-      transports: ['websocket'],  // Ensure websocket transport is being used
-      query: { sessionId }, // Pass sessionId as part of the connection URL
+      transports: ['websocket'],
+      query: { sessionId },
     });
 
-    // Listen for incoming messages
+    socketIo.on('connect', () => {
+      console.log('WebSocket connected:', socketIo.id);
+    });
+
     socketIo.on('receive_message', (data) => {
-      console.log('Received new message:', data);  // Log to verify message is being received
+      console.log('Received message:', data);
 
-      // Update the state with the new message (use the previous state to ensure the UI updates)
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, data];
-        console.log('Updated Messages:', updatedMessages);
-        return updatedMessages;
-      });
+      if (data.sender && data.receiver) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            ...data,
+            senderName: data.sender.name,
+            receiverName: data.receiver.name,
+          },
+        ]);
+      }
     });
 
-    // Store socket instance in state
     setSocket(socketIo);
 
-    // Cleanup: disconnect the socket when the component is unmounted or when `useEffect` is cleaned up
     return () => {
       socketIo.disconnect();
     };
-  }, [sessionId]);  // Empty dependency array ensures this runs only once when the component mounts
+  }, [sessionId]);
 
   // Fetch messages for the selected connection
   useEffect(() => {
@@ -76,7 +85,14 @@ const ChatPage = () => {
           const response = await axios.get(`http://localhost:5000/api/sessions/message/${selectedConnection._id}`, {
             headers: { 'x-auth-token': token },
           });
-          setMessages(response.data);
+
+          const updatedMessages = response.data.map((msg) => ({
+            ...msg,
+            senderName: msg.senderId?.name || 'Unknown',
+            receiverName: msg.receiverId?.name || 'Unknown',
+          }));
+
+          setMessages(updatedMessages);
         } catch (err) {
           console.error('Error fetching messages:', err);
         }
@@ -85,7 +101,7 @@ const ChatPage = () => {
       fetchMessages();
     }
   }, [selectedConnection]);
-
+  
   // Handle selecting a connection for chat
   const handleSelectConnection = (connection) => {
     setSelectedConnection(connection);
@@ -93,45 +109,51 @@ const ChatPage = () => {
   };
 
   // Send a message
-  const handleSendMessage = () => {
-    if (newMessage.trim() === '') return;
-  
+  const handleSendMessage = (message, file) => {
+    console.log('Message to send:', message);  // Debugging: log the message
+    console.log('File to send:', file);  // Debugging: log the file
+
+    if (message.trim() === '' && !file) {
+      console.log('No message or file to send');  // Debugging: log when no message or file
+      return;
+    }
+
     const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('user')); // assuming user info is stored
-    const messageData = {
-      sessionId: selectedConnection._id,
-      content: newMessage,
-      senderId: {
-        name: userData?.name || 'Me',
-        id: userData?._id || 'unknown',
-      }
-    };
-  
-    // ✅ Emit message to server
+    const userData = JSON.parse(localStorage.getItem('user'));
+
+    const formData = new FormData();
+    formData.append('sessionId', selectedConnection._id);  // Ensure sessionId is correctly included
+    formData.append('content', message);  // Append message content
+
+    if (file) {
+      formData.append('file', file);  // Append file if available
+      console.log('File appended to FormData:', file); // Debugging: log file data
+    }
+
+    // Emit message to server (via Socket.IO) with or without file
     socket.emit('send_message', {
       sessionId: selectedConnection._id,
-      content: newMessage,
+      content: message,
+      senderId: userData?._id,
+      receiverId: selectedConnection.userId1._id === userData?._id ? selectedConnection.userId2._id : selectedConnection.userId1._id,
+      file: file,
     });
-  
-    // ✅ Store message in backend
-    axios.post('http://localhost:5000/api/sessions/message', {
-      sessionId: selectedConnection._id,
-      content: newMessage
-    }, {
+
+    // Store the message in the backend
+    axios.post('http://localhost:5000/api/sessions/message', formData, {
       headers: { 'x-auth-token': token },
-    }).then(() => {
-      setNewMessage('');
-    }).catch((err) => {
-      console.error('Error sending message:', err);
-    });
-  };  
+    })
+      .then((response) => {
+        console.log('Message sent successfully:', response.data);
+      })
+      .catch((err) => {
+        console.error('Error sending message:', err.response || err);
+      });
+  };
 
   return (
     <div className="chat-page min-h-screen bg-gray-50 flex flex-col">
-      {/* Navbar on top */}
-      <Navbar /> {/* Always display Navbar on top */}
-
-      {/* Main layout for the chat */}
+      <Navbar />
       <div className="flex flex-1">
         {/* Left Panel: List of Connections */}
         <div className="left-panel w-1/4 bg-gray-100 p-4">
@@ -144,7 +166,7 @@ const ChatPage = () => {
                   className="bg-white p-4 rounded-lg shadow cursor-pointer"
                   onClick={() => handleSelectConnection(connection)}
                 >
-                  <p>{connection.userId1.name}</p>
+                  <p>{connection.userId1?.name || 'Unknown'}</p>
                   <p>{connection.sessionDate} at {connection.sessionTime}</p>
                 </div>
               ))
@@ -156,35 +178,27 @@ const ChatPage = () => {
 
         {/* Right Panel: Chat with Selected Connection */}
         <div className="chat-container w-3/4 p-4">
-          {selectedConnection ? (
+          {selectedConnection && (
             <>
-              <h2 className="text-2xl font-semibold mb-4">Chat with {selectedConnection.userId1.name}</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                Chat with {selectedConnection.userId1?.name || 'Unknown'}
+              </h2>
               <div className="messages-container bg-white p-4 rounded-lg shadow-lg mb-6">
                 {messages.length > 0 ? (
                   messages.map((msg, index) => (
                     <div key={index} className="message">
-                      <p><strong>{msg.senderId?.name || 'Unknown'}: </strong>{msg.content}</p>
+                      <p><strong>{msg.senderName}: </strong>{msg.content}</p>
+                      {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs" />}
+                      {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}
+                      {msg.mediaType === 'video' && <video controls><source src={msg.mediaUrl} /></video>}
                     </div>
                   ))
                 ) : (
-                  <p>No messages yet</p> 
+                  <p>No messages yet</p>
                 )}
               </div>
-
-              <div className="message-input">
-                <textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg mb-4"
-                />
-                <button onClick={handleSendMessage} className="bg-blue-600 text-white p-3 rounded-lg">
-                  Send Message
-                </button>
-              </div>
+              <MessageInput sendMessage={handleSendMessage} />
             </>
-          ) : (
-            <p>Select a connection to start chatting.</p>
           )}
         </div>
       </div>
