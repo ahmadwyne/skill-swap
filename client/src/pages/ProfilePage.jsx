@@ -8,6 +8,8 @@ import { FiEdit, FiCalendar, FiClock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch } from 'react-redux';
 import { setNotifications } from '../redux/slices/notificationSlice';
+import Background from "../components/background/Background";
+import "../components/background/Background.css";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -139,12 +141,14 @@ const ProfilePage = () => {
   const handleStartChat = id => navigate(`/chat/${id}`);
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
-      <Navbar />
-      <div className="absolute top-4 right-4">
-        <NotificationBell />
-      </div>
+    <div className="min-h-screen relative">
+  <Background />
 
+  <div className="relative z-10">
+    <Navbar />
+    <div className="absolute top-4 right-4">
+      <NotificationBell />
+    </div>
       <div className="max-w-screen-md mx-auto p-8 bg-white rounded-lg shadow-xl mt-8">
         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">
           Welcome, {user?.name || 'User'}
@@ -369,6 +373,8 @@ const ProfilePage = () => {
         )}
       </AnimatePresence>
     </div>
+  </div>
+  
   );
 };
 

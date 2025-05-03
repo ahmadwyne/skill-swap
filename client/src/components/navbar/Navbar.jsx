@@ -10,24 +10,28 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');  // Redirect user to login page after logging out
+    navigate('/login');
   };
 
   return (
-    <nav className="bg-blue-600 text-white py-4 px-6">
+    <nav className="top-0 left-0 w-full z-50 backdrop-blur-lg bg-white/20 border-b border-white/30 shadow-md text-white font-bold py-4 px-6">
       <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold">SkillSwap</Link>
-        <div className="space-x-6">
+        <Link to="/" className="text-2xl font-extrabold text-white drop-shadow-md">SkillSwap</Link>
+        <div className="space-x-6 text-white">
           <Link to="/" className="hover:underline">Home</Link>
           {token ? (
             <>
               <Link to="/profile" className="hover:underline">Profile</Link>
               <Link to="/skill-matching" className="hover:underline">Skill Matching</Link>
-              {/* Update chat link to take user to the generic chat page */}
               <Link to="/chat" className="hover:underline">Chat</Link>
               <Link to="/sessions" className="hover:underline">Sessions</Link>
               {isAdmin && <Link to="/admin" className="hover:underline">Admin Dashboard</Link>}
-              <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded hover:bg-red-600">Logout</button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 font-semibold text-white"
+              >
+                Logout
+              </button>
             </>
           ) : (
             <>
