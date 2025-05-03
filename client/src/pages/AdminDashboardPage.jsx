@@ -91,7 +91,9 @@ const AdminDashboardPage = () => {
         )}
 
         {/* Main Content */}
-        <main className={`flex-1 p-6 transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-0' : ''}`}>
+        <main className={`flex-1 p-6 overflow-y-auto max-h-[calc(100vh-4rem)] transition-all duration-300 ${
+    sidebarOpen ? 'ml-0 md:ml-0' : ''
+  }`}>
           <Outlet />
         </main>
       </div>

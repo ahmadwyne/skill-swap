@@ -78,19 +78,19 @@ const loginUser = async (req, res) => {
   // }
   if (email === process.env.ADMIN_EMAIL) {
     const adminUser = await User.findOne({ email });
-  
+
     if (!adminUser) {
       return res.status(500).json({ msg: 'Admin record missing in DB' });
     }
-  
+
     const isMatch = await bcrypt.compare(password, adminUser.password);
     if (!isMatch) {
       return res.status(401).json({ msg: 'Invalid password' });
     }
-  
+
     const payload = { user: { id: adminUser._id.toString(), role: 'admin' } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
-  
+
     return res.json({
       token,
       name: adminUser.name,

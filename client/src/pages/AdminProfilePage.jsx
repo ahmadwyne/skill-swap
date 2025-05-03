@@ -68,10 +68,6 @@ const AdminProfile = () => {
       return;
     }
 
-    const updatedData = {
-      ...form
-    };
-
     const profileForm = new FormData();
     profileForm.append('name', form.name);
     if (profileImage) profileForm.append('profilePicture', profileImage);
@@ -90,111 +86,143 @@ const AdminProfile = () => {
 
   return (
     <div
-      className="
-        max-w-3xl
-        mx-auto
-        space-y-8
-        h-[calc(100vh-4rem)]
-        overflow-y-auto
-        px-4 py-6
-        scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100
-      "
+      className="max-w-3xl mx-auto py-6 px-4 space-y-8 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
       style={{ scrollbarGutter: 'stable' }}
     >
       <h1 className="text-2xl font-bold text-blue-600">My Profile</h1>
 
       <form
         onSubmit={onProfileSubmit}
-        className="bg-white p-6 rounded shadow space-y-6"
+        className="bg-white p-6 rounded-lg shadow-lg space-y-6 border border-gray-300"
       >
         {error && <p className="text-red-500">{error}</p>}
         {passwordMessage && <p className="text-green-600">{passwordMessage}</p>}
 
-        <div>
-          <label className="block mb-1 font-medium">Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={onFormChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
+        <table className="w-full">
+          <tbody>
+            {/* Name Input */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">Name</td>
+              <td>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={onFormChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg py-1 px-3 mt-2"
+                />
+              </td>
+            </tr>
 
-        <div>
-          <label className="block mb-1 font-medium">Email</label>
-          <input
-            name="email"
-            value={form.email}
-            disabled
-            className="w-full border px-3 py-2 rounded bg-gray-100 text-gray-600"
-          />
-        </div>
+            {/* Email Input */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">Email</td>
+              <td>
+                <input
+                  name="email"
+                  value={form.email}
+                  disabled
+                  className="w-full bg-gray-100 text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-lg py-1 px-3 mt-2"
+                />
+              </td>
+            </tr>
 
-        <div>
-          <label className="block mb-1 font-medium">Upload Profile Picture</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full"
-          />
-        </div>
+            {/* Profile Picture Upload */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">Upload Profile Picture</td>
+              <td>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="fileInput"
+                  />
+                  <label
+                    htmlFor="fileInput"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 py-1 px-3 mt-2"
+                  >
+                    Choose File
+                  </label>
+                </div>
+              </td>
+            </tr>
 
-        {form.profilePicture && (
-          <div>
-            <img
-              src={form.profilePicture}
-              alt="Profile Preview"
-              className="w-24 h-24 rounded-full object-cover"
-            />
-          </div>
-        )}
+            {/* Profile Picture Preview */}
+            {form.profilePicture && (
+              <tr>
+                <td colSpan="2" className="pt-4 text-center">
+                  <img
+                    src={form.profilePicture}
+                    alt="Profile Preview"
+                    className="w-20 h-20 rounded-full object-cover mx-auto"
+                  />
+                </td>
+              </tr>
+            )}
 
-        <hr className="my-4" />
+            {/* Change Password Section */}
+            <tr>
+              <td colSpan="2" className="pt-8 text-lg font-semibold">
+                Change Password
+              </td>
+            </tr>
 
-        <h2 className="text-lg font-semibold">Change Password</h2>
-        <div>
-          <label className="block mb-1 font-medium">Current Password</label>
-          <input
-            name="currentPassword"
-            type="password"
-            value={passwords.currentPassword}
-            onChange={onPwdChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">New Password</label>
-          <input
-            name="newPassword"
-            type="password"
-            value={passwords.newPassword}
-            onChange={onPwdChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">Confirm New Password</label>
-          <input
-            name="confirmPassword"
-            type="password"
-            value={passwords.confirmPassword}
-            onChange={onPwdChange}
-            className="w-full border px-3 py-2 rounded"
-          />
-        </div>
+            {/* Current Password Input */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">Current Password</td>
+              <td>
+                <input
+                  name="currentPassword"
+                  type="password"
+                  value={passwords.currentPassword}
+                  onChange={onPwdChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg py-1 px-3 mt-2"
+                />
+              </td>
+            </tr>
 
-        <hr className="my-4" />
+            {/* New Password Input */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">New Password</td>
+              <td>
+                <input
+                  name="newPassword"
+                  type="password"
+                  value={passwords.newPassword}
+                  onChange={onPwdChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg py-1 px-3 mt-2"
+                />
+              </td>
+            </tr>
 
-        <div className="text-gray-500 text-sm">
+            {/* Confirm New Password Input */}
+            <tr>
+              <td className="text-sm font-medium text-gray-700">Confirm New Password</td>
+              <td>
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  value={passwords.confirmPassword}
+                  onChange={onPwdChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg py-1 px-3 mt-2"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Account Creation Date */}
+        <div className="mt-6 text-gray-500 text-sm">
           <span>Account Created: </span>
           {new Date(form.createdAt).toLocaleString()}
         </div>
 
-        <div className="mt-6">
+        {/* Submit Button */}
+        <div className="mt-6 flex justify-center">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300"
           >
             Save Changes
           </button>
