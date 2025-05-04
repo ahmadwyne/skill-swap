@@ -41,4 +41,8 @@ router.put(
 );
 router.put('/profile/password', adminCtrl.changePassword);
 
+// Engagement statistics route
+router.get('/engagement-stats', adminCtrl.getEngagementStats);
+
+
 module.exports = router;

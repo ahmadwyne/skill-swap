@@ -13,6 +13,7 @@ import UserManagement      from './components/admin/UserManagement';
 import ReportManagement    from './components/admin/ReportManagement';
 import AnalyticsOverview   from './components/admin/AnalyticsOverview';
 import AdminProfile from './pages/AdminProfilePage'; // Admin Profile Page
+import EngagementAnalytics from './components/admin/EngagementAnalytics';
 import PrivateRoute        from './components/common/PrivateRoute';
 
 import './App.css';
@@ -62,6 +63,7 @@ function App() {
           <Route path="reports" element={<ReportManagement />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
           <Route path="profile" element={<AdminProfile />} />
+          <Route path="engagement-analytics" element={<EngagementAnalytics />} />
         </Route>
       </Routes>
     </Router>
