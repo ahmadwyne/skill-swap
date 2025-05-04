@@ -1,20 +1,22 @@
 // // src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ProfilePage from "./pages/ProfilePage";
-import SkillMatchingPage from "./pages/SkillMatchingPage";
-import ChatPage from "./pages/ChatPage";
-import ProfileSettingsPage from "./pages/ProfileSettingsPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage"; // Must use <Outlet />
-import UserManagement from "./components/admin/UserManagement";
-import ReportManagement from "./components/admin/ReportManagement";
-import AnalyticsOverview from "./components/admin/AnalyticsOverview";
-import AdminProfile from "./pages/AdminProfilePage"; // Admin Profile Page
-import PrivateRoute from "./components/common/PrivateRoute";
+
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage            from './pages/HomePage';
+import LoginPage           from './pages/LoginPage';
+import RegisterPage        from './pages/RegisterPage';
+import ProfilePage         from './pages/ProfilePage';
+import SkillMatchingPage   from './pages/SkillMatchingPage';
+import ChatPage            from './pages/ChatPage';
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import AdminDashboardPage  from './pages/AdminDashboardPage';  // Must use <Outlet />
+import UserManagement      from './components/admin/UserManagement';
+import ReportManagement    from './components/admin/ReportManagement';
+import AnalyticsOverview   from './components/admin/AnalyticsOverview';
+import AdminProfile from './pages/AdminProfilePage'; // Admin Profile Page
+import EngagementAnalytics from './components/admin/EngagementAnalytics';
 import AboutUsPage from "./pages/AboutUSPage";
 import ScrollToTop from "./components/ScrollToTop";
+import PrivateRoute        from './components/common/PrivateRoute';
 
 import "./App.css";
 
@@ -64,6 +66,7 @@ function App() {
           <Route path="reports" element={<ReportManagement />} />
           <Route path="analytics" element={<AnalyticsOverview />} />
           <Route path="profile" element={<AdminProfile />} />
+          <Route path="engagement-analytics" element={<EngagementAnalytics />} />
         </Route>
       </Routes>
     </Router>

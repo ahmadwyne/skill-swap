@@ -30,7 +30,17 @@ const addUser = async (req, res) => {
     if (await User.exists({ email })) {
       return res.status(400).json({ message: 'Email already in use.' });
     }
-    const user = new User({ name, email, password, role: role || 'user' });
+    // 1️⃣ Hash password just like in your normal register flow
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 2️⃣ Create user with hashed password
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'user'
+    });
     await user.save();
     res.status(201).json({
       message: 'User created',
@@ -129,7 +139,7 @@ const updateProfile = async (req, res) => {
     }
     // OR use uploaded file
     else if (req.file) {
-      user.profilePicture = `/uploads/${req.file.filename}`;
+      user.profilePicture = req.file.filename;
     }
 
     await user.save();
@@ -141,7 +151,8 @@ const updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
+        // profilePicture: user.profilePicture || 'https://placehold.co/150x150?text=Admin',
+        profilePicture: user.profilePicture || null,
         createdAt: user.createdAt
       }
     });
@@ -179,6 +190,144 @@ const changePassword = async (req, res) => {
   }
 };
 
+
+// const getEngagementStats = async (req, res) => {
+//   try {
+//     // 1. Top 5 Skills To Teach
+//     const topSkillsToTeach = await User.aggregate([
+//       { $unwind: '$skillsToTeach' },
+//       { $group: { _id: '$skillsToTeach', count: { $sum: 1 } } },
+//       { $sort: { count: -1 } },
+//       { $limit: 5 }
+//     ]);
+//     console.log(topSkillsToTeach);
+
+//     // 2. Top 5 Skills To Learn
+//     const topSkillsToLearn = await User.aggregate([
+//       { $unwind: '$skillsToLearn' },
+//       { $group: { _id: '$skillsToLearn', count: { $sum: 1 } } },
+//       { $sort: { count: -1 } },
+//       { $limit: 5 }
+//     ]);
+//     console.log("Top 5 Skills To Learn:", topSkillsToLearn);
+
+//     // 3. Most Active Users by Session Participation
+//     const mostActiveUsers = await Session.aggregate([
+//       // create an array of the two participants
+//       { $project: { participants: [ '$userId1', '$userId2' ] } },
+//       // unwind so each doc has one participant
+//       { $unwind: '$participants' },
+//       // count sessions per user
+//       { $group: { _id: '$participants', sessionCount: { $sum: 1 } } },
+//       { $sort: { sessionCount: -1 } },
+//       { $limit: 5 },
+//       // lookup user details
+//       {
+//         $lookup: {
+//           from: 'users',           // your users collection
+//           localField: '_id',       // the userId
+//           foreignField: '_id',     // matches User._id
+//           as: 'user'
+//         }
+//       },
+//       { $unwind: '$user' },
+//       {
+//         $project: {
+//           _id: 0,
+//           userId: '$_id',
+//           name: '$user.name',
+//           email: '$user.email',
+//           sessionCount: 1
+//         }
+//       }
+//     ]);
+//     console.log("Most Activated Users", mostActiveUsers);
+
+//     // 4. Session Status Statistics
+//     const sessionStatusStats = await Session.aggregate([
+//       { $group: { _id: '$status', count: { $sum: 1 } } }
+//     ]);
+//     console.log("Session Status Stats",sessionStatusStats);
+
+//     return res.json({
+//       topSkillsToTeach,
+//       topSkillsToLearn,
+//       mostActiveUsers,
+//       sessionStatusStats
+//     });
+//   } catch (error) {
+//     console.error('Engagement Stats Error:', error);
+//     return res.status(500).json({ message: 'Failed to fetch engagement stats' });
+//   }
+// };
+
+// ─── Engagement Stats ───────────────────────────────────────────────
+const getEngagementStats = async (req, res) => {
+  try {
+    // 1) All Skills To Teach sorted by usage
+    const skillsToTeachStats = await User.aggregate([
+      { $unwind: '$skillsToTeach' },
+      { $group:    { _id: '$skillsToTeach', count: { $sum: 1 } } },
+      { $sort:     { count: -1 } }
+    ]);
+
+    // 2) All Skills To Learn sorted by usage
+    const skillsToLearnStats = await User.aggregate([
+      { $unwind: '$skillsToLearn' },
+      { $group:    { _id: '$skillsToLearn', count: { $sum: 1 } } },
+      { $sort:     { count: -1 } }
+    ]);
+
+    // 3) All Users by session participation
+    const mostActiveUsers = await Session.aggregate([
+      { $project: { participants: [ '$userId1', '$userId2' ] } },
+      { $unwind:  '$participants' },
+      { $group:   { _id: '$participants', sessionCount: { $sum: 1 } } },
+      { $sort:    { sessionCount: -1 } },
+      {
+        $lookup: {
+          from:         'users',
+          localField:   '_id',
+          foreignField: '_id',
+          as:           'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id:          0,
+          userId:       '$_id',
+          name:         '$user.name',
+          email:        '$user.email',
+          sessionCount: 1
+        }
+      }
+    ]);
+
+    // 4) Session Status stats
+    const sessionStatusStats = await Session.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+
+    // 5) All sessions with both users populated
+    const allSessions = await Session.find()
+      .populate('userId1', 'name email')
+      .populate('userId2', 'name email')
+      .sort({ createdAt: -1 }); // most recent first
+
+    return res.status(200).json({
+      skillsToTeachStats,
+      skillsToLearnStats,
+      mostActiveUsers,
+      sessionStatusStats,
+      allSessions
+    });
+  } catch (error) {
+    console.error('Engagement Stats Error:', error);
+    return res.status(500).json({ message: 'Failed to fetch engagement stats' });
+  }
+};
+
 module.exports = {
   getAllUsers,
   addUser,
@@ -188,5 +337,6 @@ module.exports = {
   getAnalytics,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  getEngagementStats
 };
