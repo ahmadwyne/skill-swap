@@ -1,5 +1,5 @@
-
 // // src/App.jsx
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage            from './pages/HomePage';
 import LoginPage           from './pages/LoginPage';
@@ -14,18 +14,24 @@ import ReportManagement    from './components/admin/ReportManagement';
 import AnalyticsOverview   from './components/admin/AnalyticsOverview';
 import AdminProfile from './pages/AdminProfilePage'; // Admin Profile Page
 import EngagementAnalytics from './components/admin/EngagementAnalytics';
+import AboutUsPage from "./pages/AboutUSPage";
+import ScrollToTop from "./components/ScrollToTop";
 import PrivateRoute        from './components/common/PrivateRoute';
 
-import './App.css';
+import "./App.css";
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+
+        {/* 🆕 About Us Route */}
+        <Route path="/about-us" element={<AboutUsPage />} />
 
         {/* Protected User Routes */}
         <Route
@@ -36,10 +42,7 @@ function App() {
           path="/skill-matching"
           element={<PrivateRoute element={<SkillMatchingPage />} />}
         />
-        <Route
-          path="/chat"
-          element={<PrivateRoute element={<ChatPage />} />}
-        />
+        <Route path="/chat" element={<PrivateRoute element={<ChatPage />} />} />
         <Route
           path="/chat/:sessionId"
           element={<PrivateRoute element={<ChatPage />} />}
@@ -71,4 +74,3 @@ function App() {
 }
 
 export default App;
-

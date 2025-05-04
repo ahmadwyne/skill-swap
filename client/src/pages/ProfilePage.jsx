@@ -9,6 +9,8 @@ import { FiEdit, FiCalendar, FiClock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch } from 'react-redux';
 import { setNotifications } from '../redux/slices/notificationSlice';
+import Background from "../components/background/Background";
+import "../components/background/Background.css";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -140,8 +142,10 @@ const ProfilePage = () => {
   const handleStartChat = id => navigate(`/chat/${id}`);
 
   return (
-    <div className="min-h-screen bg-gray-50 relative"> {/* Add relative positioning here */}
-      {/* Navbar */}
+    <div className="min-h-screen relative">
+  <Background />
+
+  <div className="relative z-10">
       <Navbar />
 
       {/* Profile and Notification Section */}
@@ -396,6 +400,8 @@ const ProfilePage = () => {
         )}
       </AnimatePresence>
     </div>
+  </div>
+  
   );
 };
 
