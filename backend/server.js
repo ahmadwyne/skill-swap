@@ -9,6 +9,7 @@ const path       = require('path');
 //const fs         = require('fs');
 const bcrypt = require('bcryptjs');
 const User   = require('./models/User');
+const bodyParser = require('body-parser');
 
 // Import routes and controllers
 const authRoutes = require('./routes/authRoutes');
@@ -29,8 +30,8 @@ const server = http.createServer(app);
 const io     = socketIo(server, {
   cors: {
     origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type, x-auth-token'],
     credentials: true,
   },
 });
@@ -57,7 +58,9 @@ setNotificationSocketIO(notificationSocket);
 // const upload = multer({ storage });
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────
-app.use(express.json());
+// Use body parsing for both JSON and URL encoded data
+app.use(express.json());  // For parsing application/json
+app.use(express.urlencoded({ extended: true }));  // For parsing application/x-www-form-urlencoded
 app.use(cors());
 
 // Serve static files (images) from 'uploads' folder

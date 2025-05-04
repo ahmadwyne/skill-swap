@@ -1,7 +1,7 @@
 // src/routes/sessionRoutes.js
 const express = require('express');
 const router = express.Router();
-const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages } = require('../controllers/sessionController');
+const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, scheduleSession } = require('../controllers/sessionController');
 const verifyToken = require('../middlewares/auth');
 
 // Send session request
@@ -21,5 +21,8 @@ router.post('/message', verifyToken, upload, sendMessage);  // Apply 'upload' mi
 
 // Get messages for a session
 router.get('/message/:sessionId', verifyToken, getMessages);
+
+// Schedule a new session (new meeting time)
+router.post('/schedule', verifyToken, scheduleSession);  // New route for scheduling
 
 module.exports = router;

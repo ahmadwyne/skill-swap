@@ -1,4 +1,5 @@
 // src/routes/notificationRoutes.js
+
 const express = require('express');
 const { sendNotification, getNotifications, markAsRead, markAllAsRead, sendNewMeetingScheduledNotification, sendReminderNotification } = require('../controllers/notificationController');
 const router = express.Router();

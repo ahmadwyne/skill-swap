@@ -1,6 +1,9 @@
 // src/controllers/notificationController.js
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
+const Session = require('../models/Session'); // <-- Add this line
+const User = require('../models/User'); // Ensure we have the User model to validate userId
+
 let notificationSocket; // Declare a separate socket for notifications
 
 // Import setSocketIO from sessionController.js
@@ -118,37 +121,47 @@ const markAllAsRead = async (req, res) => {
   }
 };
 
-// src/controllers/notificationController.js
-
-// Send new meeting scheduled notification
-const sendNewMeetingScheduledNotification = async (sessionId, message) => {
+// Function to send notification for a new scheduled session
+const sendNewMeetingScheduledNotification = async (session, message) => {
   try {
-    const session = await Session.findById(sessionId).populate('userId1 userId2');
+    // Retrieve session and populate the user data
     if (!session) {
-      return res.status(404).json({ msg: 'Session not found' });
+      console.log('Session not found!');
+      return;
     }
 
-    const sender = session.userId1;
-    const receiver = session.userId2;
+    console.log('Retrieved session:', session);  // Log the session to check its contents
 
-    // Send notifications to both users
-    await sendNotification(sender._id, message, 'new_meeting_scheduled');
-    await sendNotification(receiver._id, message, 'new_meeting_scheduled');
+    // Ensure both userId1 and userId2 are properly converted to ObjectIds
+    const userId1 = new mongoose.Types.ObjectId(session.userId1._id);  // Use new to properly create ObjectId
+    const userId2 = new mongoose.Types.ObjectId(session.userId2._id);  // Use new to properly create ObjectId
 
-    // Emit via socket
-    if (notificationSocket) {
-      notificationSocket.emit('new_notification', {
-        userId: sender._id,
-        message,
-        type: 'new_meeting_scheduled',
-      });
-      notificationSocket.emit('new_notification', {
-        userId: receiver._id,
-        message,
-        type: 'new_meeting_scheduled',
-      });
-    }
+    // Emit notification to both users via WebSocket
+    notificationSocket.to(`user_${userId1}`).emit('newMeetingScheduled', { message });
+    notificationSocket.to(`user_${userId2}`).emit('newMeetingScheduled', { message });
 
+    console.log(`Notification sent to users ${userId1} and ${userId2}`);
+
+    // Create and save the notifications in the database for both users
+    //const Notification = require('./src/models/Notification'); // Assuming Notification model is in this location
+
+    const notification1 = new Notification({
+      userId: userId1,
+      message: message,
+      type: 'new_meeting_scheduled',
+    });
+
+    const notification2 = new Notification({
+      userId: userId2,
+      message: message,
+      type: 'new_meeting_scheduled',
+    });
+
+    // Save both notifications to the database
+    await notification1.save();
+    await notification2.save();
+
+    console.log(`Notifications saved for users ${userId1} and ${userId2}`);
   } catch (err) {
     console.error('Error sending new meeting scheduled notification:', err.message);
   }

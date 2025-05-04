@@ -4,13 +4,18 @@ import axios from 'axios';
 import Navbar from '../components/navbar/Navbar'; // Import Navbar
 import MessageInput from '../components/chat/MessageInput'; // Import MessageInput
 import { useNavigate, useParams } from 'react-router-dom';
+import { FiCalendar, FiClock } from 'react-icons/fi';
 
 const ChatPage = () => {
   const { sessionId } = useParams(); // Get sessionId from URL parameter
   const [connections, setConnections] = useState([]); // List of connections
   const [selectedConnection, setSelectedConnection] = useState(null); // Selected connection for chat
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
   const [messages, setMessages] = useState([]); // List of messages in the current chat
   const [socket, setSocket] = useState(null); // Socket connection
+  const [notificationSocket, setNotificationSocket] = useState(null); // Notification socket connection
   const navigate = useNavigate();
 
   // Fetch accepted session connections
@@ -75,6 +80,27 @@ const ChatPage = () => {
       socketIo.disconnect();
     };
   }, [sessionId]);
+
+  // Set up the **Notification Socket.io connection** (separate from the chat socket)
+  useEffect(() => {
+    const socketIoNotification = io('http://localhost:5000/notifications', {
+      transports: ['websocket'],
+    });
+
+    socketIoNotification.on('connect', () => {
+      console.log('Notification WebSocket connected:', socketIoNotification.id);
+    });
+
+    setNotificationSocket(socketIoNotification);
+
+    // Subscribe the user to notifications (you need to pass the userId from localStorage)
+    const userId = JSON.parse(localStorage.getItem('user'))._id;
+    socketIoNotification.emit('subscribeToNotifications', userId);
+
+    return () => {
+      socketIoNotification.disconnect();
+    };
+  }, []);
 
   // Fetch messages for the selected connection
   useEffect(() => {
@@ -151,6 +177,36 @@ const ChatPage = () => {
       });
   };
 
+  // Open schedule modal
+  const openScheduleModal = () => {
+    setIsModalOpen(true);
+  };
+
+  // Close schedule modal
+  const closeScheduleModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // Schedule session (send API request to backend)
+  const handleScheduleSession = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/sessions/schedule',
+        {
+          sessionId,
+          newMeetingDate: scheduledDate,
+          newMeetingTime: scheduledTime,
+        },
+        { headers: { 'x-auth-token': token } }
+      );
+
+      closeScheduleModal();
+    } catch (error) {
+      console.error('Error scheduling session:', error);
+    }
+  };
+
   return (
     <div className="chat-page min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
@@ -198,6 +254,54 @@ const ChatPage = () => {
                 )}
               </div>
               <MessageInput sendMessage={handleSendMessage} />
+              {/* Button to open the schedule modal */}
+              <button
+                onClick={openScheduleModal}
+                className="bg-blue-600 text-white p-2 rounded-lg"
+              >
+                Schedule Next Meeting
+              </button>
+
+              {/* Schedule Modal */}
+              {isModalOpen && (
+                <div className="modal">
+                  <div className="modal-content">
+                    <h2 className="text-xl">Schedule Next Meeting</h2>
+                    <div className="flex flex-col space-y-2">
+                      <label>
+                        <FiCalendar /> Select Date:
+                        <input
+                          type="date"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          className="border p-2 rounded"
+                        />
+                      </label>
+                      <label>
+                        <FiClock /> Select Time:
+                        <input
+                          type="time"
+                          value={scheduledTime}
+                          onChange={(e) => setScheduledTime(e.target.value)}
+                          className="border p-2 rounded"
+                        />
+                      </label>
+                    </div>
+                    <button
+                      onClick={handleScheduleSession}
+                      className="bg-green-600 text-white p-2 rounded-lg mt-4"
+                    >
+                      Confirm Schedule
+                    </button>
+                    <button
+                      onClick={closeScheduleModal}
+                      className="bg-red-600 text-white p-2 rounded-lg mt-2"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

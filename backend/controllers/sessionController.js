@@ -4,6 +4,8 @@ const Message = require('../models/Message');  // Import Message model
 const User = require('../models/User');  // Import User model
 const multer = require('multer');
 const path = require('path');
+const { sendNewMeetingScheduledNotification } = require('./notificationController');
+const mongoose = require('mongoose');
 
 // Configure storage for uploaded files
 const storage = multer.diskStorage({
@@ -102,7 +104,11 @@ const getAcceptedSessions = async (req, res) => {
     const userId = req.user.id;
     const sessions = await Session.find({
       $or: [{ userId1: userId, status: 'accepted' }, { userId2: userId, status: 'accepted' }],
-    }).populate('userId1 userId2'); // Populate user details
+    })
+      .populate('userId1', 'name email profilePicture')  // Populate userId1 with specific fields
+      .populate('userId2', 'name email profilePicture'); // Populate userId2 with specific fields
+
+    console.log('Populated sessions:', sessions);  // Debugging: Log to verify populated data
 
     res.json(sessions);
   } catch (err) {
@@ -192,30 +198,37 @@ const getMessages = async (req, res) => {
   }
 };  
 
-// src/controllers/sessionController.js
-
 // Schedule a new session
 const scheduleSession = async (req, res) => {
   const { sessionId, newMeetingDate, newMeetingTime } = req.body;
+  
+  console.log('Received sessionId:', sessionId);  // Log sessionId to debug
   
   if (!sessionId || !newMeetingDate || !newMeetingTime) {
     return res.status(400).json({ msg: 'SessionId, newMeetingDate, and newMeetingTime are required' });
   }
 
   try {
-    const session = await Session.findById(sessionId);
+    // Ensure the sessionId is properly converted to ObjectId
+    const session = await Session.findById(new mongoose.Types.ObjectId(sessionId));  // Fixed here
     if (!session) {
+      console.log('Session not found in database!');
       return res.status(404).json({ msg: 'Session not found' });
     }
+
+    console.log('Found session:', session);  // Log session details
 
     // Update the session with the new scheduled date and time
     session.newMeetingDate = new Date(newMeetingDate);  // Update new meeting date
     session.newMeetingTime = newMeetingTime;  // Update new meeting time
     await session.save();
 
-    // Send the scheduled session notification
+    // Log the session after save to ensure it is properly updated
+    console.log('Updated session after save:', session);
+
+    // Send the scheduled session notification via WebSockets
     const message = `You have a new meeting scheduled for ${newMeetingDate} at ${newMeetingTime}`;
-    sendNewMeetingScheduledNotification(sessionId, message);  // Trigger notification for both users
+    sendNewMeetingScheduledNotification(session, message);  // Emit notification for both users
 
     res.json({ msg: 'Session scheduled successfully', session });
   } catch (err) {
