@@ -48,3 +48,7 @@ body,
 .read-the-docs {
   color: #888;
 }
+/* Ensure the progress bar color is dark blue or white */
+.Toastify__progress-bar {
+  background-color: #ffffff !important; /* Dark Blue color for the progress bar */
+}
