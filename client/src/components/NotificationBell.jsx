@@ -2,46 +2,38 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setNotifications } from '../redux/slices/notificationSlice';
+import { FaBell } from 'react-icons/fa';
 import io from 'socket.io-client';
-import NotificationDropdown from './NotificationDropdown'; // Import dropdown component
+import NotificationDropdown from './NotificationDropdown';
 
 const NotificationBell = () => {
   const dispatch = useDispatch();
   const { notifications, unreadCount } = useSelector((state) => state.notifications);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);  // Manage dropdown visibility
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    // Connect to the server with polling
     const socket = io('http://localhost:5000/notifications');
-
-    // Listen for new notifications
     socket.on('new_notification', (notification) => {
-      dispatch(setNotifications([notification]));  // Add new notification to Redux store
+      dispatch(setNotifications([notification]));
     });
-
-    return () => {
-      socket.disconnect();  // Clean up socket connection when component unmounts
-    };
+    return () => socket.disconnect();
   }, [dispatch]);
 
-  // Toggle the dropdown visibility
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
   return (
-    <div>
-      {/* Bell Icon */}
-      <button className="relative text-gray-700" onClick={toggleDropdown}>
-        <i className="fas fa-bell text-5xl"></i>
+    <div className="relative">
+      <button
+        onClick={() => setIsDropdownOpen((open) => !open)}
+        className="w-14 h-14  bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition-shadow shadow-md"
+        title="Notifications"
+      >
+        <FaBell size={28} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount}
           </span>
         )}
       </button>
 
-      {/* Notification Dropdown */}
       {isDropdownOpen && <NotificationDropdown />}
     </div>
   );

@@ -1,12 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaUsers, FaChartBar, FaFlag, FaUserShield } from 'react-icons/fa';
+import { FaUsers, FaChartBar, FaFlag, FaUserShield, FaBolt } from 'react-icons/fa';
 
 const navItems = [
   { to: 'users', label: 'Users', icon: <FaUsers /> },
   { to: 'reports', label: 'Reports', icon: <FaFlag /> },
   { to: 'analytics', label: 'Analytics', icon: <FaChartBar /> },
+  { to: 'engagement-analytics', label: 'Engagement Stats', icon: <FaBolt /> },  // <-- NEW
   { to: 'profile', label: 'Profile', icon: <FaUserShield /> },
+
 ];
 
 const AdminSidebar = () => {

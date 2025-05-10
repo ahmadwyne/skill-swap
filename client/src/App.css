@@ -5,7 +5,7 @@ body,
   width: 100%; /* Add this to ensure full width */
   margin: 0;
   padding: 0;
-  overflow: auto; /* Prevent scrollbars */
+  overflow: -moz-hidden-unscrollable; /* Prevent scrollbars */
 }
 
 #root {
@@ -47,4 +47,24 @@ body,
 
 .read-the-docs {
   color: #888;
+}
+/* Glassmorphism Section */
+.glass-panel {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4rem 2rem;
+  border-radius: 2rem;
+  margin: 0 auto 4rem;
+  width: 90%;
+  max-width: 1100px;
+  color: white;
+  z-index: 2;
+}
+.notification-dropdown {
+  position: absolute;
+  top: 50px; /* Adjust height */
+  right: 0;
+  z-index: 1000; /* Ensure it appears above other elements */
+  background-color: white; /* Make sure it's visible */
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1); /* Add shadow */
 }

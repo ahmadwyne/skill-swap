@@ -4,6 +4,7 @@ const router = express.Router();
 const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, scheduleSession, markSessionAsCompletedOrCanceled  } = require('../controllers/sessionController');
 const verifyToken = require('../middlewares/auth');
 
+
 // Send session request
 router.post('/request', verifyToken, sendSessionRequest);
 

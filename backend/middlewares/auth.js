@@ -23,5 +23,7 @@ const ensureAdmin = async (req, res, next) => {
   }
   next();
 };
-
-module.exports = verifyToken;
+module.exports = {
+  verifyToken,
+  ensureAdmin
+};

@@ -100,11 +100,27 @@ export const fetchAnalytics = createAsyncThunk('admin/fetchAnalytics', async (_,
   try {
     const response = await API.get('/api/admin/analytics');
     return response.data;
-    
+
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch analytics');
   }
 });
+
+// Fetch engagement stats
+export const fetchEngagementStats = createAsyncThunk(
+  'admin/fetchEngagementStats',
+  async (_, thunkAPI) => {
+    try {
+      const response = await API.get('/api/admin/engagement-stats');
+      return response.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to fetch engagement stats'
+      );
+    }
+  }
+);
+
 
 // ============================
 // Initial State
@@ -116,6 +132,8 @@ const initialState = {
   analytics: {},
   loading: false,
   error: null,
+  engagementStats: {},
+
 };
 
 // ============================
@@ -217,6 +235,20 @@ const adminSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+    builder
+      .addCase(fetchEngagementStats.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEngagementStats.fulfilled, (state, action) => {
+        state.loading = false;
+        state.engagementStats = action.payload;
+      })
+      .addCase(fetchEngagementStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
   }
 });
 

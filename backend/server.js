@@ -78,7 +78,7 @@ mongoose
         email:          ADMIN_EMAIL,
         password:       hash,
         role:           'admin',
-        profilePicture: ADMIN_PIC_URL || ''
+        profilePicture: ADMIN_PIC_URL ? path.basename(ADMIN_PIC_URL) : ''
       });
       await admin.save();
       console.log('🚀 Admin user seeded:', ADMIN_EMAIL);
