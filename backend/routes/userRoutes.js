@@ -1,6 +1,6 @@
 const express = require('express');
 const { getUserProfile, updateUserProfile, changePassword, uploadProfilePicture } = require('../controllers/userController');
-const {verifyToken} = require('../middlewares/auth'); // Token verification middleware
+const {verifyToken, ensureAdmin} = require('../middlewares/auth'); // Token verification middleware
 const router = express.Router();
 
 // Route to fetch user profile (GET)

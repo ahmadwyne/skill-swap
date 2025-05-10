@@ -110,6 +110,9 @@ const ProfilePage = () => {
       const { data } = await axios.put(
         "http://localhost:5000/api/users/profile",
         {
+          name: user.name, // Ensure `name` is sent in the request
+          status: user.status,
+          socials: user.socials,
           skillsToTeach: modalTeach.split(",").map((s) => s.trim()),
           skillsToLearn: modalLearn.split(",").map((s) => s.trim()),
         },
@@ -153,7 +156,6 @@ const ProfilePage = () => {
       <Background />
       <div className="relative z-10">
         <Navbar />
-
         {/* Profile and Notification Section */}
         <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto p-8 space-y-6 md:space-y-0">
           {/* Left Profile Card */}
@@ -234,8 +236,6 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-          {/* Right Card with Notifications */}
-          {/* Notification Bell */}
         </div>
 
         {/* Profile Info and Skills Info */}
@@ -250,7 +250,7 @@ const ProfilePage = () => {
               {error}
             </div>
           )}
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills Card */}
             <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-lg shadow-lg p-6 h-96 overflow-y-auto hover:shadow-2xl transition-shadow duration-300">
@@ -343,67 +343,57 @@ const ProfilePage = () => {
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 session-list">
                 {(activeTab === "pending" ? pendingSessions : acceptedSessions)
                   .length > 0 ? (
-                  (activeTab === "pending"
-                    ? pendingSessions
-                    : acceptedSessions
-                  ).map((s) => (
-                    <div
-                      key={s._id}
-                      className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center
-                                                     text-gray-600 text-sm font-semibold"
-                          >
-                            {s.userId1.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
+                  (activeTab === "pending" ? pendingSessions : acceptedSessions)
+                    .map((s) => (
+                      <div key={s._id} className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
+                              {/* Fallback to initials if name is missing */}
+                              {s.userId1?.name
+                                ? s.userId1.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+                                : "U"} {/* Fallback to 'U' */}
+                            </div>
+                            <span className="text-base font-semibold text-gray-800">
+                              {/* Fallback to 'User' if name is missing */}
+                              {s.userId1?.name || "User"} 
+                            </span>
                           </div>
-                          <span className="text-base font-semibold text-gray-800">
-                            {s.userId1.name}
+                          <span className="text-sm text-gray-500">
+                            {formatDate(s.sessionDate)}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(s.sessionDate)}
-                        </span>
-                      </div>
 
-                      <div className="flex items-center space-x-4 text-gray-600 mb-3 text-sm">
-                        <div className="flex items-center space-x-1">
-                          <FiCalendar size={14} />
-                          <span>{formatDate(s.sessionDate)}</span>
+                        <div className="flex items-center space-x-4 text-gray-600 mb-3 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <FiCalendar size={14} />
+                            <span>{formatDate(s.sessionDate)}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <FiClock size={14} />
+                            <span>{formatTime(s.sessionDate)}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <FiClock size={14} />
-                          <span>{formatTime(s.sessionDate)}</span>
-                        </div>
-                      </div>
 
-                      <button
-                        onClick={() =>
-                          activeTab === "pending"
-                            ? handleAccept(s._id)
-                            : handleStartChat(s._id)
-                        }
-                        className={`text-sm font-medium px-3 py-1.5 rounded-lg transition ${
-                          activeTab === "pending"
-                            ? "bg-green-600 text-white hover:bg-green-700"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        } active:scale-95`}
-                      >
-                        {activeTab === "pending" ? "Accept" : "Start Chat"}
-                      </button>
-                    </div>
-                  ))
+                        <button
+                          onClick={() =>
+                            activeTab === "pending"
+                              ? handleAccept(s._id)
+                              : handleStartChat(s._id)
+                          }
+                          className={`text-sm font-medium px-3 py-1.5 rounded-lg transition ${
+                            activeTab === "pending"
+                              ? "bg-green-600 text-white hover:bg-green-700"
+                              : "bg-blue-600 text-white hover:bg-blue-700"
+                          } active:scale-95`}
+                        >
+                          {activeTab === "pending" ? "Accept" : "Start Chat"}
+                        </button>
+                      </div>
+                    ))
                 ) : (
                   <p className="text-gray-500 text-center text-sm">
-                    {activeTab === "pending"
-                      ? "No pending sessions."
-                      : "No upcoming sessions."}
+                    {activeTab === "pending" ? "No pending sessions." : "No upcoming sessions."}
                   </p>
                 )}
               </div>
