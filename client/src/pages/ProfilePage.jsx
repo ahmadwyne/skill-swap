@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/navbar/Navbar";
 import NotificationBell from "../components/NotificationBell";
+import ProfileCard from '../components/ProfileCard';  // Import ProfileCard
 import { FaLinkedin, FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FiEdit, FiCalendar, FiClock } from "react-icons/fi";
@@ -142,6 +143,11 @@ const ProfilePage = () => {
   };
   const handleStartChat = (id) => navigate(`/chat/${id}`);
 
+  // Show loading state until the profile is available
+  if (!user) {
+    return <div>Loading...</div>; // Or use a spinner/loading indicator
+  }
+
   return (
     <div className="min-h-screen relative">
       <Background />
@@ -228,7 +234,6 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-
           {/* Right Card with Notifications */}
           {/* Notification Bell */}
         </div>
@@ -282,7 +287,6 @@ const ProfilePage = () => {
                   )}
                 </div>
               </div>
-
               <div>
                 <p className="text-2xl font-medium text-gray-700 mb-2 text-left">
                   Skills You Want to Learn:
@@ -424,12 +428,19 @@ const ProfilePage = () => {
               exit={{ y: "100vh", opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-left">
-                Update Your Skills
-              </h2>
+              <motion.div
+                className="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg"
+                initial={{ y: '100vh', opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: '100vh', opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              >
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-left">
+                  Update Your Skills
+                </h2>
 
-              {error && <p className="text-red-500 mb-4">{error}</p>}
-              {success && <p className="text-green-500 mb-4">{success}</p>}
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                {success && <p className="text-green-500 mb-4">{success}</p>}
 
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2 text-left">
@@ -456,20 +467,21 @@ const ProfilePage = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-4">
-                <button
-                  onClick={closeModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateProfile}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                >
-                  Save
-                </button>
-              </div>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdateProfile}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Save
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}
