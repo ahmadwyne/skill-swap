@@ -48,6 +48,9 @@ body,
 .read-the-docs {
   color: #888;
 }
+/* Ensure the progress bar color is dark blue or white */
+.Toastify__progress-bar {
+  background-color: #ffffff !important; /* Dark Blue color for the progress bar */
 /* Glassmorphism Section */
 .glass-panel {
   backdrop-filter: blur(16px);
@@ -67,4 +70,5 @@ body,
   z-index: 1000; /* Ensure it appears above other elements */
   background-color: white; /* Make sure it's visible */
   box-shadow: 0px 4px 6px rgba(0,0,0,0.1); /* Add shadow */
+
 }
