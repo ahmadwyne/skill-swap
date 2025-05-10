@@ -10,12 +10,15 @@ const ChatPage = () => {
   const { sessionId } = useParams(); // Get sessionId from URL parameter
   const [connections, setConnections] = useState([]); // List of connections
   const [selectedConnection, setSelectedConnection] = useState(null); // Selected connection for chat
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false); // Feedback Modal state
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false); // Schedule Modal state
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [messages, setMessages] = useState([]); // List of messages in the current chat
   const [socket, setSocket] = useState(null); // Socket connection
   const [notificationSocket, setNotificationSocket] = useState(null); // Notification socket connection
+  const [rating, setRating] = useState(1);
+  const [feedback, setFeedback] = useState('');
   const navigate = useNavigate();
 
   // Fetch accepted session connections
@@ -136,6 +139,11 @@ const ChatPage = () => {
 
   // Send a message
   const handleSendMessage = (message, file) => {
+    if (selectedConnection?.status === 'completed' || selectedConnection?.status === 'canceled') {
+      alert('You cannot send messages for completed or canceled sessions.');
+      return;
+    }
+
     console.log('Message to send:', message);  // Debugging: log the message
     console.log('File to send:', file);  // Debugging: log the file
 
@@ -179,12 +187,22 @@ const ChatPage = () => {
 
   // Open schedule modal
   const openScheduleModal = () => {
-    setIsModalOpen(true);
+    setIsScheduleModalOpen(true); // Open schedule modal
   };
 
   // Close schedule modal
   const closeScheduleModal = () => {
-    setIsModalOpen(false);
+    setIsScheduleModalOpen(false); // Close schedule modal
+  };
+
+  // Open feedback modal
+  const openFeedbackModal = () => {
+    setIsFeedbackModalOpen(true); // Open feedback modal
+  };
+
+  // Close feedback modal
+  const closeFeedbackModal = () => {
+    setIsFeedbackModalOpen(false); // Close feedback modal
   };
 
   // Schedule session (send API request to backend)
@@ -206,96 +224,260 @@ const ChatPage = () => {
       console.error('Error scheduling session:', error);
     }
   };
+      
+  // Handle marking session as completed or canceled
+  const handleMarkSession = async (status) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+
+      if (!feedback) {
+        alert('Please provide feedback before marking the session.');
+        return;
+      }
+
+      console.log(`Marking session as ${status}`);
+
+      await axios.post(
+        'http://localhost:5000/api/sessions/mark-session',
+        {
+          sessionId,
+          status,
+          rating,
+          feedback,
+        },
+        {
+          headers: {
+            'x-auth-token': token,  // Ensure the token is being sent correctly
+          },
+        }
+      );
+      console.log('Session marked successfully');
+
+      setIsFeedbackModalOpen(false); // Close feedback modal after submission
+      // Refresh session data to update the status
+      const updatedSession = await axios.get('http://localhost:5000/api/sessions/accepted', {
+        headers: {
+          'x-auth-token': token, // Pass token for the session data request as well
+        },
+      });
+      setSelectedConnection(updatedSession.data.find((session) => session._id === sessionId));
+    } catch (error) {
+      console.error('Error marking session:', error);
+    }
+  };
+
+  // Get the logged-in user
+  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+
+  // Check if the logged-in user is user1 or user2 in the current session
+  const isUser1 = selectedConnection?.userId1?._id === loggedInUser?._id;
+  const isUser2 = selectedConnection?.userId2?._id === loggedInUser?._id;
+
+  // Check if feedback has been given by the logged-in user
+  const isFeedbackGivenByLoggedInUser = isUser1
+    ? selectedConnection?.feedbackByUser1 // Assuming these fields contain the feedback for user1
+    : isUser2
+    ? selectedConnection?.feedbackByUser2 // Assuming these fields contain the feedback for user2
+    : false; // If neither, feedback hasn't been provided by the logged-in user
+
+   // Check if both users have provided feedback
+  const bothUsersProvidedFeedback = selectedConnection?.feedbackByUser1 && selectedConnection?.feedbackByUser2;
+
+  // Check if session is completed or canceled
+  const isSessionCompletedOrCanceled = selectedConnection?.status === 'completed' || selectedConnection?.status === 'canceled';
+
+  // Disable interaction if the session is completed or canceled and both users have provided feedback
+  const isChatBlocked = isSessionCompletedOrCanceled && bothUsersProvidedFeedback;
+
+  // Show the feedback modal if the logged-in user hasn't provided feedback yet
+  const shouldShowFeedbackModal = !isFeedbackGivenByLoggedInUser && !isChatBlocked;
+
+  // Show "Schedule Next Meeting" only if the session is not completed or canceled and both users haven't provided feedback
+  const shouldShowScheduleButton = !isSessionCompletedOrCanceled && !bothUsersProvidedFeedback;
 
   return (
     <div className="chat-page min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
       <div className="flex flex-1">
         {/* Left Panel: List of Connections */}
-        <div className="left-panel w-1/4 bg-gray-100 p-4">
-          <h2 className="text-xl font-semibold">Connections</h2>
-          <div className="space-y-4 mt-4">
+        <div className="left-panel w-1/4 bg-gray-100 p-6 rounded-xl shadow-xl">
+          <h2 className="text-2xl font-semibold text-gray-700">Connections</h2>
+          <div className="space-y-4 mt-6">
             {connections.length > 0 ? (
               connections.map((connection) => (
                 <div
                   key={connection._id}
-                  className="bg-white p-4 rounded-lg shadow cursor-pointer"
+                  className="bg-white p-4 rounded-lg shadow-lg cursor-pointer hover:bg-indigo-100"
                   onClick={() => handleSelectConnection(connection)}
                 >
-                  <p>{connection.userId1?.name || 'Unknown'}</p>
-                  <p>{connection.sessionDate} at {connection.sessionTime}</p>
+                  <p className="font-semibold text-gray-800">{connection.userId1?.name || 'Unknown'}</p>
+                  <p className="text-gray-500">{connection.sessionDate} at {connection.sessionTime}</p>
                 </div>
               ))
             ) : (
-              <p>No connections available.</p>
+              <p className="text-gray-500">No connections available.</p>
             )}
           </div>
         </div>
 
         {/* Right Panel: Chat with Selected Connection */}
-        <div className="chat-container w-3/4 p-4">
+        <div className="chat-container w-3/4 p-6 bg-white rounded-xl shadow-xl">
           {selectedConnection && (
             <>
-              <h2 className="text-2xl font-semibold mb-4">
+              <h2 className="text-3xl font-semibold mb-4 text-gray-800">
                 Chat with {selectedConnection.userId1?.name || 'Unknown'}
               </h2>
-              <div className="messages-container bg-white p-4 rounded-lg shadow-lg mb-6">
+              
+              <div className="messages-container bg-gray-50 p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
                 {messages.length > 0 ? (
                   messages.map((msg, index) => (
-                    <div key={index} className="message">
-                      <p><strong>{msg.senderName}: </strong>{msg.content}</p>
-                      {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs" />}
+                    <div 
+                      key={index} 
+                      className={`message mb-4 p-4 bg-white rounded-lg shadow-sm ${msg.senderId && msg.senderId._id === loggedInUser._id ? 'text-right bg-blue-600 text-white' : 'text-left bg-gray-200 text-black'}`}
+                    >
+                      <p>
+                        <strong>{msg.senderName}: </strong>{msg.content}
+                      </p>
+                      {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs mt-2" />}
                       {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}
                       {msg.mediaType === 'video' && <video controls><source src={msg.mediaUrl} /></video>}
                     </div>
                   ))
                 ) : (
-                  <p>No messages yet</p>
+                  <p className="text-gray-400">No messages yet</p>
                 )}
               </div>
-              <MessageInput sendMessage={handleSendMessage} />
-              {/* Button to open the schedule modal */}
-              <button
-                onClick={openScheduleModal}
-                className="bg-blue-600 text-white p-2 rounded-lg"
-              >
-                Schedule Next Meeting
-              </button>
+
+
+              {/* Feedback Display if session is completed or canceled */}
+              {isSessionCompletedOrCanceled && (
+                <div className="feedback-display bg-white p-4 rounded-lg shadow-lg mb-6">
+                  <h3 className="font-semibold text-gray-800">Feedback from User 1:</h3>
+                  <p>{selectedConnection?.feedbackByUser1}</p>
+
+                  <h3 className="font-semibold text-gray-800 mt-4">Feedback from User 2:</h3>
+                  <p>{selectedConnection?.feedbackByUser2}</p>
+                </div>
+              )}
+
+              {/* Prevent sending messages if the session is completed or canceled */}
+              {!isChatBlocked && <MessageInput sendMessage={handleSendMessage} />}
+
+              {/* Schedule Next Meeting Button */}
+              {shouldShowScheduleButton && (
+                <button
+                  onClick={openScheduleModal}
+                  className="bg-blue-600 text-white p-3 rounded-lg mt-6 transition duration-300 ease-in-out transform hover:bg-blue-700"
+                >
+                  Schedule Next Meeting
+                </button>
+              )}
+
+              {/* Mark as Completed or Canceled */}
+              {!isChatBlocked && !isSessionCompletedOrCanceled && (
+                <div className="mt-6 flex space-x-4">
+                  <button
+                    onClick={() => handleMarkSession('completed')}
+                    className="bg-green-600 text-white p-4 rounded-lg w-48 hover:bg-green-700 transition duration-300 ease-in-out"
+                  >
+                    Mark as Completed
+                  </button>
+                  <button
+                    onClick={() => handleMarkSession('canceled')}
+                    className="bg-red-600 text-white p-4 rounded-lg w-48 hover:bg-red-700 transition duration-300 ease-in-out"
+                  >
+                    Mark as Canceled
+                  </button>
+                </div>
+              )}
+
+              {/* Feedback Button */}
+              {!isChatBlocked && !bothUsersProvidedFeedback && (
+                <button
+                  onClick={openFeedbackModal}
+                  className="bg-yellow-500 text-white p-3 rounded-lg mt-6 transition duration-300 ease-in-out transform hover:bg-yellow-600"
+                >
+                  Provide Feedback
+                </button>
+              )}
+
+              {/* Feedback Modal (only show if feedback hasn't been given yet) */}
+              {isFeedbackModalOpen && (
+                <div className="feedback-modal bg-white p-6 rounded-lg shadow-lg fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="modal-content w-96 bg-white p-6 rounded-lg relative">
+                    {/* Close Button for the Modal */}
+                    <button
+                      onClick={closeFeedbackModal}
+                      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    >
+                      ✖
+                    </button>
+                    <h3 className="text-xl font-semibold text-gray-800">Provide Feedback</h3>
+                    <select
+                      onChange={(e) => setRating(e.target.value)}
+                      value={rating}
+                      className="mt-4 w-full p-2 border rounded-lg bg-gray-50"
+                    >
+                      {[...Array(5)].map((_, index) => (
+                        <option key={index} value={index + 1}>
+                          {index + 1} Star{index + 1 > 1 ? 's' : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <textarea
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      placeholder="Write your feedback"
+                      className="mt-4 w-full p-2 border rounded-lg bg-gray-50"
+                    />
+                    <button
+                      onClick={() => handleMarkSession('completed')}
+                      className="bg-green-600 text-white p-4 rounded-lg mt-6 w-full hover:bg-green-700 transition duration-300 ease-in-out"
+                    >
+                      Submit Feedback
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Schedule Modal */}
-              {isModalOpen && (
-                <div className="modal">
-                  <div className="modal-content">
+              {isScheduleModalOpen  && (
+                <div className="modal bg-white p-6 rounded-lg shadow-lg fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="modal-content w-96 p-6">
                     <h2 className="text-xl">Schedule Next Meeting</h2>
-                    <div className="flex flex-col space-y-2">
-                      <label>
+                    <div className="flex flex-col space-y-2 mt-4">
+                      <label className="font-medium">
                         <FiCalendar /> Select Date:
                         <input
                           type="date"
                           value={scheduledDate}
                           onChange={(e) => setScheduledDate(e.target.value)}
-                          className="border p-2 rounded"
+                          className="border p-2 rounded-lg"
                         />
                       </label>
-                      <label>
+                      <label className="font-medium">
                         <FiClock /> Select Time:
                         <input
                           type="time"
                           value={scheduledTime}
                           onChange={(e) => setScheduledTime(e.target.value)}
-                          className="border p-2 rounded"
+                          className="border p-2 rounded-lg"
                         />
                       </label>
                     </div>
                     <button
                       onClick={handleScheduleSession}
-                      className="bg-green-600 text-white p-2 rounded-lg mt-4"
+                      className="bg-green-600 text-white p-4 rounded-lg mt-6 w-full hover:bg-green-700 transition duration-300 ease-in-out"
                     >
                       Confirm Schedule
                     </button>
                     <button
                       onClick={closeScheduleModal}
-                      className="bg-red-600 text-white p-2 rounded-lg mt-2"
+                      className="bg-red-600 text-white p-4 rounded-lg mt-2 w-full hover:bg-red-700 transition duration-300 ease-in-out"
                     >
                       Cancel
                     </button>

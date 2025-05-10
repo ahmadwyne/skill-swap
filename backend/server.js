@@ -44,19 +44,6 @@ const notificationSocket = io.of('/notifications');
 setSessionSocketIO(sessionSocket);
 setNotificationSocketIO(notificationSocket);
 
-// ─── MULTER SETUP ─────────────────────────────────────────────────
-// const uploadDir = path.join(__dirname, 'uploads');
-// if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-// const storage = multer.diskStorage({
-//   destination: (_req, _file, cb) => cb(null, uploadDir),
-//   filename:     (req, file, cb) => {
-//     const ext = path.extname(file.originalname);
-//     cb(null, $`{req.user?.id || 'admin'}-${Date.now()}${ext}`);
-//   }
-// });
-// const upload = multer({ storage });
-
 // ─── MIDDLEWARE ───────────────────────────────────────────────────
 // Use body parsing for both JSON and URL encoded data
 app.use(express.json());  // For parsing application/json

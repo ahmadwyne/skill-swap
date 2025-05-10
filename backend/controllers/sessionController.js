@@ -4,7 +4,7 @@ const Message = require('../models/Message');  // Import Message model
 const User = require('../models/User');  // Import User model
 const multer = require('multer');
 const path = require('path');
-const { sendNewMeetingScheduledNotification } = require('./notificationController');
+const { sendNewMeetingScheduledNotification, sendNotification, sendNotificationForFeedbackRequest, sendNotificationForSessionCancellation } = require('./notificationController');
 const mongoose = require('mongoose');
 
 // Configure storage for uploaded files
@@ -103,7 +103,14 @@ const getAcceptedSessions = async (req, res) => {
   try {
     const userId = req.user.id;
     const sessions = await Session.find({
-      $or: [{ userId1: userId, status: 'accepted' }, { userId2: userId, status: 'accepted' }],
+      $or: [
+        { userId1: userId, status: 'accepted' },
+        { userId2: userId, status: 'accepted' },
+        { userId1: userId, status: 'completed' },
+        { userId2: userId, status: 'completed' },
+        { userId1: userId, status: 'canceled' },
+        { userId2: userId, status: 'canceled' },
+      ],
     })
       .populate('userId1', 'name email profilePicture')  // Populate userId1 with specific fields
       .populate('userId2', 'name email profilePicture'); // Populate userId2 with specific fields
@@ -237,4 +244,65 @@ const scheduleSession = async (req, res) => {
   }
 };
 
-module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO, scheduleSession };  // Export setSocketIO to set io
+// sessionController.js
+
+const markSessionAsCompletedOrCanceled = async (req, res) => {
+  const { sessionId, status, rating, feedback } = req.body;
+  const userId = req.user.id;  // This should be populated by the verifyToken middleware
+
+  try {
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ msg: 'Session not found' });
+    }
+
+    // Ensure the user is authorized to mark the session
+    if (![session.userId1.toString(), session.userId2.toString()].includes(userId)) {
+      return res.status(403).json({ msg: 'You are not authorized to mark this session' });
+    }
+
+    // Proceed with updating session status
+    session.status = status;
+
+    if (status === 'completed') {
+      if (session.userId1.toString() === userId) {
+        session.ratingByUser1 = rating;
+        session.feedbackByUser1 = feedback;
+        session.feedbackGivenByUser1 = true;
+      } else {
+        session.ratingByUser2 = rating;
+        session.feedbackByUser2 = feedback;
+        session.feedbackGivenByUser2 = true;
+      }
+
+      // If both users have given feedback, close the session
+      if (session.feedbackGivenByUser1 && session.feedbackGivenByUser2) {
+        session.sessionClosed = true;
+      }
+
+      await session.save();
+
+      // Notify the other user to provide feedback
+      const otherUserId = session.userId1.toString() === userId ? session.userId2 : session.userId1;
+      console.log(`Notifying user ${otherUserId} for feedback request.`);
+      await sendNotificationForFeedbackRequest(otherUserId);  // Notify the other user
+
+      return res.json({ msg: 'Session updated successfully', session });
+    } else {
+      session.sessionClosed = true;  // If canceled, close the session
+      await session.save();
+
+      // Notify both users about session cancellation
+      console.log(`Session canceled. Notifying users ${session.userId1} and ${session.userId2}`);
+      await sendNotificationForSessionCancellation(session.userId1);
+      await sendNotificationForSessionCancellation(session.userId2);
+
+      return res.json({ msg: 'Session canceled successfully', session });
+    }
+  } catch (error) {
+    console.error('Error marking session as completed or canceled:', error);
+    return res.status(500).send('Server error');
+  }
+};
+
+module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO, scheduleSession, markSessionAsCompletedOrCanceled };  // Export setSocketIO to set io

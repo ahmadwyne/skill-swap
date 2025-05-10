@@ -201,4 +201,57 @@ const sendReminderNotification = async (sessionId, message, reminderTime) => {
   }
 };
 
-module.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, setSocket, sendReminderNotification, sendNewMeetingScheduledNotification };  // Export setSocket
+// New notification function for feedback request
+const sendNotificationForFeedbackRequest = async (userId) => {
+  try {
+    const message = 'Please provide feedback for the completed/canceled session';
+    const notification = new Notification({
+      userId,
+      message,
+      type: 'feedback_request',
+    });
+
+    // Save notification to the database
+    await notification.save();
+
+    // Emit notification to user
+    notificationSocket.emit('new_notification', {
+      userId,
+      message,
+      type: 'feedback_request',
+    });
+
+    console.log(`Feedback request sent to user ${userId}`);
+
+  } catch (err) {
+    console.error('Error sending feedback notification:', err.message);
+  }
+};
+
+// New notification function for session cancellation
+const sendNotificationForSessionCancellation = async (userId) => {
+  try {
+    const message = 'Your session has been canceled';
+    const notification = new Notification({
+      userId,
+      message,
+      type: 'session_canceled',
+    });
+
+    // Save notification to the database
+    await notification.save();
+
+    // Emit notification to user
+    notificationSocket.emit('new_notification', {
+      userId,
+      message,
+      type: 'session_canceled',
+    });
+
+    console.log(`Session cancellation notification sent to user ${userId}`);
+  } catch (err) {
+    console.error('Error sending session canceled notification:', err.message);
+  }
+};
+
+module.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, setSocket, sendReminderNotification, sendNewMeetingScheduledNotification, sendNotificationForFeedbackRequest, sendNotificationForSessionCancellation };  // Export setSocket

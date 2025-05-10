@@ -10,6 +10,13 @@ const sessionSchema = new mongoose.Schema(
     newMeetingDate: { type: Date, required: false },  // New field to store the scheduled time
     newMeetingTime: { type: String, required: false },  // New field to store the scheduled time
     status: { type: String, default: 'pending' },
+    ratingByUser1: { type: Number, min: 1, max: 5, default: null },
+    feedbackByUser1: { type: String, default: '' },
+    ratingByUser2: { type: Number, min: 1, max: 5, default: null },
+    feedbackByUser2: { type: String, default: '' },
+    sessionClosed: { type: Boolean, default: false },
+    feedbackGivenByUser1: { type: Boolean, default: false },
+    feedbackGivenByUser2: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
