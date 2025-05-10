@@ -1,7 +1,7 @@
 // src/routes/sessionRoutes.js
 const express = require('express');
 const router = express.Router();
-const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, scheduleSession, markSessionAsCompletedOrCanceled  } = require('../controllers/sessionController');
+const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, scheduleSession, markSessionAsCompletedOrCanceled  } = require('../controllers/sessionController');
 const {verifyToken} = require('../middlewares/auth');
 
 // Send session request
@@ -15,6 +15,12 @@ router.get('/pending', verifyToken, getPendingSessions);
 
 // Route to get accepted session requests for the logged-in user
 router.get('/accepted', verifyToken, getAcceptedSessions);
+
+// Get completed sessions for the logged-in user
+router.get('/completed', verifyToken, getCompletedSessions);
+
+// Get canceled sessions for the logged-in user
+router.get('/canceled', verifyToken, getCanceledSessions);
 
 // Send message in session
 router.post('/message', verifyToken, upload, sendMessage);  // Apply 'upload' middleware here

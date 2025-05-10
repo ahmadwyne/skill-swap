@@ -124,6 +124,42 @@ const getAcceptedSessions = async (req, res) => {
   }
 };
 
+// Get completed sessions for the logged-in user
+const getCompletedSessions = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const sessions = await Session.find({
+      $or: [
+        { userId1: userId, status: 'completed' },
+        { userId2: userId, status: 'completed' },
+      ],
+    }).populate('userId1').populate('userId2'); // Populate user details
+
+    res.json(sessions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+// Get canceled sessions for the logged-in user
+const getCanceledSessions = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const sessions = await Session.find({
+      $or: [
+        { userId1: userId, status: 'canceled' },
+        { userId2: userId, status: 'canceled' },
+      ],
+    }).populate('userId1').populate('userId2'); // Populate user details
+
+    res.json(sessions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
 // Send a new message in a session
 const sendMessage = async (req, res) => {
   console.log('Received sessionId:', req.body.sessionId);  // Log received sessionId
@@ -305,4 +341,4 @@ const markSessionAsCompletedOrCanceled = async (req, res) => {
   }
 };
 
-module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, sendMessage, getMessages, setSocketIO, scheduleSession, markSessionAsCompletedOrCanceled };  // Export setSocketIO to set io
+module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, setSocketIO, scheduleSession, markSessionAsCompletedOrCanceled };  // Export setSocketIO to set io
