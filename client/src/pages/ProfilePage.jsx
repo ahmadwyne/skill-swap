@@ -149,6 +149,11 @@ const ProfilePage = () => {
   };
   const handleStartChat = (id) => navigate(`/chat/${id}`);
 
+  const getSessionPartnerName = (session) => {
+    const partner = session.userId1?._id === user?._id ? session.userId2 : session.userId1;
+    return partner?.name ?? 'Unknown User';
+  };
+
   // Show loading state until the profile is available
   if (!user) {
     return <div>Loading...</div>; // Or use a spinner/loading indicator
@@ -389,7 +394,7 @@ const ProfilePage = () => {
                               : 'U'}
                           </div>
                           <span className="text-base font-semibold text-gray-800">
-                            {s.userId1?.name || 'User'}
+                            {getSessionPartnerName(s, user._id)}
                           </span>
                         </div>
                         <span className="text-sm text-gray-500">
