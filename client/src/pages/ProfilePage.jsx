@@ -25,6 +25,8 @@ const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingSessions, setPendingSessions] = useState([]);
   const [acceptedSessions, setAcceptedSessions] = useState([]);
+  const [completedSessions, setCompletedSessions] = useState([]);
+  const [canceledSessions, setCanceledSessions] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -74,16 +76,17 @@ const ProfilePage = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const [p, a] = await Promise.all([
-          axios.get("http://localhost:5000/api/sessions/pending", {
-            headers: { "x-auth-token": token },
-          }),
-          axios.get("http://localhost:5000/api/sessions/accepted", {
-            headers: { "x-auth-token": token },
-          }),
+        const [p, a, c, co] = await Promise.all([
+          axios.get("http://localhost:5000/api/sessions/pending", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/accepted", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/completed", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/canceled", { headers: { "x-auth-token": token } })
         ]);
+        
         setPendingSessions(p.data);
         setAcceptedSessions(a.data);
+        setCompletedSessions(co.data);
+        setCanceledSessions(c.data);
       } catch {
         setError("Error fetching sessions");
       }
@@ -110,6 +113,9 @@ const ProfilePage = () => {
       const { data } = await axios.put(
         "http://localhost:5000/api/users/profile",
         {
+          name: user.name, // Ensure `name` is sent in the request
+          status: user.status,
+          socials: user.socials,
           skillsToTeach: modalTeach.split(",").map((s) => s.trim()),
           skillsToLearn: modalLearn.split(",").map((s) => s.trim()),
         },
@@ -143,6 +149,11 @@ const ProfilePage = () => {
   };
   const handleStartChat = (id) => navigate(`/chat/${id}`);
 
+  const getSessionPartnerName = (session) => {
+    const partner = session.userId1?._id === user?._id ? session.userId2 : session.userId1;
+    return partner?.name ?? 'Unknown User';
+  };
+
   // Show loading state until the profile is available
   if (!user) {
     return <div>Loading...</div>; // Or use a spinner/loading indicator
@@ -153,7 +164,6 @@ const ProfilePage = () => {
       <Background />
       <div className="relative z-10">
         <Navbar />
-
         {/* Profile and Notification Section */}
         <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto p-8 space-y-6 md:space-y-0">
           {/* Left Profile Card */}
@@ -234,8 +244,6 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-          {/* Right Card with Notifications */}
-          {/* Notification Bell */}
         </div>
 
         {/* Profile Info and Skills Info */}
@@ -250,7 +258,7 @@ const ProfilePage = () => {
               {error}
             </div>
           )}
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills Card */}
             <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-lg shadow-lg p-6 h-96 overflow-y-auto hover:shadow-2xl transition-shadow duration-300">
@@ -318,53 +326,75 @@ const ProfilePage = () => {
 
               <div className="flex space-x-4 mb-4">
                 <button
-                  onClick={() => setActiveTab("pending")}
+                  onClick={() => setActiveTab('pending')}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === "pending"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    activeTab === 'pending'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Pending
                 </button>
                 <button
-                  onClick={() => setActiveTab("upcoming")}
+                  onClick={() => setActiveTab('upcoming')}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === "upcoming"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    activeTab === 'upcoming'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Upcoming
+                </button>
+                <button
+                  onClick={() => setActiveTab('completed')}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    activeTab === 'completed'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => setActiveTab('canceled')}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    activeTab === 'canceled'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Canceled
                 </button>
               </div>
 
               {/* Scrollable sessions list */}
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 session-list">
-                {(activeTab === "pending" ? pendingSessions : acceptedSessions)
-                  .length > 0 ? (
-                  (activeTab === "pending"
+                {(activeTab === 'pending'
+                  ? pendingSessions
+                  : activeTab === 'upcoming'
+                  ? acceptedSessions
+                  : activeTab === 'completed'
+                  ? completedSessions
+                  : canceledSessions
+                ).length > 0 ? (
+                  (activeTab === 'pending'
                     ? pendingSessions
-                    : acceptedSessions
+                    : activeTab === 'upcoming'
+                    ? acceptedSessions
+                    : activeTab === 'completed'
+                    ? completedSessions
+                    : canceledSessions
                   ).map((s) => (
-                    <div
-                      key={s._id}
-                      className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition"
-                    >
+                    <div key={s._id} className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <div
-                            className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center
-                                                     text-gray-600 text-sm font-semibold"
-                          >
-                            {s.userId1.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
+                          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
+                            {s.userId1?.name
+                              ? s.userId1.name.split(' ').map((n) => n[0]).join('').toUpperCase()
+                              : 'U'}
                           </div>
                           <span className="text-base font-semibold text-gray-800">
-                            {s.userId1.name}
+                            {getSessionPartnerName(s, user._id)}
                           </span>
                         </div>
                         <span className="text-sm text-gray-500">
@@ -385,25 +415,29 @@ const ProfilePage = () => {
 
                       <button
                         onClick={() =>
-                          activeTab === "pending"
+                          activeTab === 'pending'
                             ? handleAccept(s._id)
                             : handleStartChat(s._id)
                         }
                         className={`text-sm font-medium px-3 py-1.5 rounded-lg transition ${
-                          activeTab === "pending"
-                            ? "bg-green-600 text-white hover:bg-green-700"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
+                          activeTab === 'pending'
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
                         } active:scale-95`}
                       >
-                        {activeTab === "pending" ? "Accept" : "Start Chat"}
+                        {activeTab === 'pending' ? 'Accept' : 'Start Chat'}
                       </button>
                     </div>
                   ))
                 ) : (
                   <p className="text-gray-500 text-center text-sm">
-                    {activeTab === "pending"
-                      ? "No pending sessions."
-                      : "No upcoming sessions."}
+                    {activeTab === 'pending'
+                      ? 'No pending sessions.'
+                      : activeTab === 'upcoming'
+                      ? 'No upcoming sessions.'
+                      : activeTab === 'completed'
+                      ? 'No completed sessions.'
+                      : 'No canceled sessions.'}
                   </p>
                 )}
               </div>
