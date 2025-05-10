@@ -21,7 +21,7 @@ const AdminDashboardPage = () => {
   const profileImage = user?.profilePicture
     ? user.profilePicture.startsWith('http')
       ? user.profilePicture
-      : `http://localhost:5000${user.profilePicture}`
+      : `http://localhost:5000/uploads/${user.profilePicture}`
     : 'https://placehold.co/150x150?text=Admin';
 
   return (
@@ -105,7 +105,7 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Animation keyframe */}
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           from {
             opacity: 0;

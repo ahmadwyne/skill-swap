@@ -189,7 +189,7 @@ const ProfileSettingsPage = () => {
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Facebook"
+            placeholder="Twitter"
             value={formData.socials.facebook || ''}
             onChange={(e) =>
               setFormData({ ...formData, socials: { ...formData.socials, facebook: e.target.value } })
@@ -201,7 +201,7 @@ const ProfileSettingsPage = () => {
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Twitter"
+            placeholder="Instagram"
             value={formData.socials.twitter || ''}
             onChange={(e) =>
               setFormData({ ...formData, socials: { ...formData.socials, twitter: e.target.value } })

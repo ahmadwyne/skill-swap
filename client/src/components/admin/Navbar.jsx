@@ -13,14 +13,20 @@ const AdminNavbar = ({ adminName, profileImage, onToggleSidebar }) => {
 
       {/* Right - Admin Greeting */}
       <div className="flex items-center space-x-4">
-      <img
+        {/* <img
           src={profileImage}
           alt="Admin"
 
           className="w-10 h-10 rounded-full object-cover border-2 border-white"
+        /> */}
+        <img
+          src={profileImage}
+          alt="Admin"
+          className="w-10 h-10 rounded-full object-cover border-2 border-white"
         />
+
         <span className="text-lg font-semibold">Hello, Mr. {adminName}</span>
-        
+
       </div>
     </header>
   );
