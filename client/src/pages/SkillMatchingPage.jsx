@@ -168,10 +168,6 @@ const SkillMatchingPage = () => {
     }
   };
   
-  
-  
-  
-
   return (
     <div className="min-h-screen relative">
       <Background />
@@ -217,7 +213,7 @@ const SkillMatchingPage = () => {
                       <div className="w-full">
                         <div className="flex flex-wrap items-center justify-between">
                           <h3 className="text-lg font-bold tracking-wide text-white">{match.user.name}</h3>
-                          <p className="text-sm text-indigo-200 italic tracking-tight">{match.teachSkill}</p>
+                          <p className="text-base text-white font-extrabold uppercase tracking-wide">{match.teachSkill}</p> {/* White, bolder, and uppercase */}
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <p className="text-sm text-white opacity-80">{match.user.status || ''}</p>
@@ -309,7 +305,7 @@ const SkillMatchingPage = () => {
               ))
             ) : (
               <div className="text-center text-white font-bold">No Matches Found</div>
-            )}
+            )}
           </div>
           <ToastContainer /> {/* Add ToastContainer here */}
         </div>
