@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { AiOutlineLink } from 'react-icons/ai';
-import { FiX } from 'react-icons/fi'; // Import red cross icon
+import { FiX } from 'react-icons/fi'; // Red cross icon
 
 const MessageInput = ({ sendMessage }) => {
   const [message, setMessage] = useState('');
@@ -17,7 +17,7 @@ const MessageInput = ({ sendMessage }) => {
     if (selectedFile) {
       setFile(selectedFile);
       const filePreviewUrl = URL.createObjectURL(selectedFile);
-      setPreviewUrl(filePreviewUrl);
+      setPreviewUrl(filePreviewUrl); // Create the preview URL
     }
   };
 
@@ -41,8 +41,24 @@ const MessageInput = ({ sendMessage }) => {
       return;  // Exit early if no message, file, or link
     }
 
+    // Format the link by ensuring it starts with "http://" or "https://"
+    let finalMessage = message;
+
+    if (link) {
+      // If the link does not start with "http://" or "https://", add "http://"
+      const formattedLink = !link.startsWith('http://') && !link.startsWith('https://')
+        ? `http://${link}`
+        : link;
+
+      // Convert the entered link to a clickable hyperlink
+      finalMessage += ` <a href="${formattedLink}" target="_blank" rel="noopener noreferrer">${formattedLink}</a>`;
+
+      // Update the link state after formatting
+      setLink(formattedLink);
+    }
+
     // Send both the message and the link separately
-    sendMessage(message, file, link);
+    sendMessage(finalMessage, file, link);
 
     // Clear inputs after sending
     setMessage('');
