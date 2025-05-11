@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { AiOutlineLink } from 'react-icons/ai';
+import { FiX } from 'react-icons/fi'; // Import red cross icon
 
 const MessageInput = ({ sendMessage }) => {
   const [message, setMessage] = useState('');
@@ -9,6 +10,7 @@ const MessageInput = ({ sendMessage }) => {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
+  const fileInputRef = React.createRef(); // Reference to file input
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -27,6 +29,12 @@ const MessageInput = ({ sendMessage }) => {
     setShowLinkInput(true);  // Show the link input field
   };
 
+  const handleRemoveFile = () => {
+    setFile(null);
+    setPreviewUrl(null); // Remove file preview
+    fileInputRef.current.value = ''; // Clear the file input field
+  };
+
   const handleSendMessage = () => {
     if (message.trim() === '' && !file && !link) {
       console.log('No message, file, or link to send');
@@ -42,6 +50,7 @@ const MessageInput = ({ sendMessage }) => {
     setFile(null);
     setPreviewUrl(null);
     setShowLinkInput(false);
+    fileInputRef.current.value = ''; // Clear the file input field
   };
 
   return (
@@ -54,11 +63,29 @@ const MessageInput = ({ sendMessage }) => {
         className="flex-1 p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-white"
       />
       <input
+        ref={fileInputRef} // Attach reference here
         type="file"
         accept="image/*,video/*,audio/*"
         onChange={handleFileChange}
         className="ml-2 p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
       />
+      
+      {previewUrl && (
+        <div className="preview mt-2 flex items-center">
+          <div className="file-preview-container flex items-center mr-2">
+            {file && file.type.startsWith('image') && <img src={previewUrl} alt="Preview" className="max-w-xs rounded-lg shadow-md" />}
+            {file && file.type.startsWith('video') && <video src={previewUrl} controls className="max-w-xs rounded-lg shadow-md" />}
+            {file && file.type.startsWith('audio') && <audio src={previewUrl} controls className="max-w-xs rounded-lg shadow-md" />}
+          </div>
+          <button
+            onClick={handleRemoveFile}
+            className="ml-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition duration-300 ease-in-out"
+          >
+            <FiX className="text-white text-xl" />
+          </button>
+        </div>
+      )}
+
       <button
         onClick={handleAttachLink}
         className="ml-2 bg-blue-600 text-white p-2 placeholder-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
@@ -74,14 +101,6 @@ const MessageInput = ({ sendMessage }) => {
           placeholder="Enter a URL"
           className="ml-2 p-2 border-2 placeholder-white border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      )}
-
-      {previewUrl && (
-        <div className="preview mt-2">
-          {file && file.type.startsWith('image') && <img src={previewUrl} alt="Preview" className="max-w-xs rounded-lg shadow-md" />}
-          {file && file.type.startsWith('video') && <video src={previewUrl} controls className="max-w-xs rounded-lg shadow-md" />}
-          {file && file.type.startsWith('audio') && <audio src={previewUrl} controls className="max-w-xs rounded-lg shadow-md" />}
-        </div>
       )}
 
       <button
