@@ -70,22 +70,24 @@ const MessageInput = ({ sendMessage }) => {
   };
 
   return (
-    <div className="message-input flex items-center p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg shadow-md">
+    <div className="message-input flex flex-wrap gap-2 items-center p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg shadow-md w-full">
+
       <input
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type a message..."
-        className="flex-1 p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-white"
+        className="flex-1 min-w-[150px] p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-white"
       />
+
       <input
         ref={fileInputRef} // Attach reference here
         type="file"
         accept="image/*,video/*,audio/*"
         onChange={handleFileChange}
-        className="ml-2 p-2 border-2 border-gray-300 rounded-lg cursor-pointer"
+        className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer max-w-[160px] text-sm"
       />
-      
+
       {previewUrl && (
         <div className="preview mt-2 flex items-center">
           <div className="file-preview-container flex items-center mr-2">
@@ -104,27 +106,27 @@ const MessageInput = ({ sendMessage }) => {
 
       <button
         onClick={handleAttachLink}
-        className="ml-2 bg-blue-600 text-white p-2 placeholder-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+        className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
       >
-       <AiOutlineLink className="text-white text-xl" />
+        <AiOutlineLink className="text-white text-xl" />
       </button>
-
       {showLinkInput && (
         <input
           type="text"
           value={link}
           onChange={handleLinkChange}
           placeholder="Enter a URL"
-          className="ml-2 p-2 border-2 placeholder-white border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
         />
       )}
 
       <button
         onClick={handleSendMessage}
-        className="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+        className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
       >
-       <FaPaperPlane className="text-white text-xl" />
+        <FaPaperPlane className="text-white text-xl" />
       </button>
+
     </div>
   );
 };

@@ -29,6 +29,7 @@ const ChatPage = () => {
   const [screenshot, setScreenshot] = useState(null);
   const [reportSuccess, setReportSuccess] = useState(false); // State for success message
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Fetch accepted session connections
   useEffect(() => {
@@ -290,60 +291,60 @@ const ChatPage = () => {
   };
 
   // Handle Report Submit
-const handleReportSubmit = async (e) => {
-  e.preventDefault(); // Prevent the default form submit behavior
+  const handleReportSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submit behavior
 
-  // Retrieve the logged-in user from localStorage
-  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+    // Retrieve the logged-in user from localStorage
+    const loggedInUser = JSON.parse(localStorage.getItem('user'));
 
-  // if (!loggedInUser || !loggedInUser._id) {
-  //   alert('Invalid user. Please log in again.');
-  //   return; // Stop the submission if no valid user is found
-  // }
+    // if (!loggedInUser || !loggedInUser._id) {
+    //   alert('Invalid user. Please log in again.');
+    //   return; // Stop the submission if no valid user is found
+    // }
 
-  // Get sessionId from the selected connection
-  const sessionId = selectedConnection._id;
+    // Get sessionId from the selected connection
+    const sessionId = selectedConnection._id;
 
-  // Determine the targetUser from the session
-  const targetUser =
-    selectedConnection.userId1._id === loggedInUser._id
-      ? selectedConnection.userId2._id
-      : selectedConnection.userId1._id;
+    // Determine the targetUser from the session
+    const targetUser =
+      selectedConnection.userId1._id === loggedInUser._id
+        ? selectedConnection.userId2._id
+        : selectedConnection.userId1._id;
 
-  if (!targetUser || !sessionId) {
-    alert('Invalid session or target user.');
-    return; // Stop the submission if target user or session is missing
-  }
+    if (!targetUser || !sessionId) {
+      alert('Invalid session or target user.');
+      return; // Stop the submission if target user or session is missing
+    }
 
-  const formData = new FormData();
-  formData.append('reason', reason);
-  formData.append('description', description);
-  formData.append('reporter', loggedInUser._id); // Include the logged-in user as the reporter
-  formData.append('targetUser', targetUser); // Include the target user
-  formData.append('session', sessionId); // Include the session ID
+    const formData = new FormData();
+    formData.append('reason', reason);
+    formData.append('description', description);
+    formData.append('reporter', loggedInUser._id); // Include the logged-in user as the reporter
+    formData.append('targetUser', targetUser); // Include the target user
+    formData.append('session', sessionId); // Include the session ID
 
-  if (screenshot) {
-    formData.append('screenshot', screenshot); // Attach screenshot if available
-  }
+    if (screenshot) {
+      formData.append('screenshot', screenshot); // Attach screenshot if available
+    }
 
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
-  try {
-    const response = await axios.post('http://localhost:5000/api/reports', formData, {
-      headers: { 'x-auth-token': token },
-    });
+    try {
+      const response = await axios.post('http://localhost:5000/api/reports', formData, {
+        headers: { 'x-auth-token': token },
+      });
 
-    // Success: Reset form and show success message
-    alert('Report submitted successfully');
-    setReason('');
-    setDescription('');
-    setScreenshot(null);
-    closeReportModal();
-  } catch (error) {
-    console.error('Error submitting report:', error);
-    alert('Error submitting report: ' + (error.response?.data?.message || error.message));
-  }
-};
+      // Success: Reset form and show success message
+      alert('Report submitted successfully');
+      setReason('');
+      setDescription('');
+      setScreenshot(null);
+      closeReportModal();
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Error submitting report: ' + (error.response?.data?.message || error.message));
+    }
+  };
 
   // Get the logged-in user
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
@@ -405,25 +406,40 @@ const handleReportSubmit = async (e) => {
       <div className="chat-page flex flex-col">
         <Navbar />
         <div className="flex flex-1">
+          <button
+            className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-lg shadow-lg"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            ☰
+          </button>
           {/* Left Panel: List of Connections */}
-          <div className="left-panel w-1/4 p-6 max-h-screen overflow-auto bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
+          <div className={`left-panel fixed z-40 top-0 bottom-0 left-0 w-3/4 sm:w-2/4 md:w-1/4  min-h-screen p-6 bg-white/10 backdrop-blur-md shadow-xl border border-white/20 transform transition-transform duration-300 ease-in-out 
+  ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}>
+
             <h2 className="text-2xl font-semibold text-gray-800">Connections</h2>
-            <div className="space-y-4 mt-6">
+            <div className="space-y-4 mt-6 overflow-auto max-h-[80vh]">
               {connections.length > 0 ? (
-                connections.map((connection) => (
-                  <div
-                    key={connection._id}
-                    className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-4 rounded-lg shadow-lg cursor-pointer hover:bg-indigo-100"
-                    onClick={() => handleSelectConnection(connection)}
-                  >
-                    <p className="font-semibold text-white">{getOtherUserName(connection)}</p>
-                    <p className="text-gray-600">Skill: {connection.skill || 'Eclipse OCL' }</p>
-                    <p className="text-white">{formatDate(connection.sessionDate)} at {connection.sessionTime}</p>
-                  </div>
-                ))
+                connections.map((connection) => {
+                  const isSelected = selectedConnection && selectedConnection._id === connection._id;
+                  return (
+                    <div
+                      key={connection._id}
+                      className={`p-4 rounded-lg shadow-lg cursor-pointer 
+          ${isSelected
+                          ? 'bg-blue-600 border-2 border-white'
+                          : 'bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 hover:bg-indigo-100'}`}
+                      onClick={() => handleSelectConnection(connection)}
+                    >
+                      <p className="font-semibold text-white">{getOtherUserName(connection)}</p>
+                      <p className="text-white">Skill: {connection.skill || 'Eclipse OCL'}</p>
+                      <p className="text-white">{connection.sessionDate} at {connection.sessionTime}</p>
+                    </div>
+                  );
+                })
               ) : (
                 <p className="text-white">No connections available.</p>
               )}
+
             </div>
           </div>
           {/* Right Panel: Chat with Selected Connection */}
@@ -435,14 +451,15 @@ const handleReportSubmit = async (e) => {
                 <h2 className="text-3xl font-semibold mb-4 text-gray-800">
                   Chat with {getChatUserName()}
                 </h2>
-                 <p className="text-gray-600">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
+                <p className="text-white">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
                 <div className="messages-container bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200  p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
                   {messages.length > 0 ? (
                     messages.map((msg, index) => (
                       <div
                         key={index}
-                        className={`message mb-4 p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg ${msg.senderId && msg.senderId._id === loggedInUser._id ? 'text-right bg-blue-600 text-white' : 'text-left bg-gray-200 text-white'}`}
-                      >
+                        className="message mb-4 p-4 bg-white via-blue-400 to-blue-300 rounded-lg text-left bg-blue-600 text-grey-700 ">
+                        {msg.senderId && msg.senderId._id === loggedInUser._id}
+
                         <p>
                           <strong>{msg.senderName}: </strong>
                           {/* Render the message content as HTML */}
@@ -461,7 +478,7 @@ const handleReportSubmit = async (e) => {
 
                 {/* Feedback Display if session is completed or canceled */}
                 {isSessionCompletedOrCanceled && (
-                  <div className="feedback-display bg-white p-4 rounded-lg shadow-lg mb-6">
+                  <div className="feedback-display bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-4 rounded-lg shadow-lg mb-6">
                     <h3 className="font-semibold text-gray-800">Feedback from User 1:</h3>
                     <p>{selectedConnection?.feedbackByUser1}</p>
 
@@ -473,47 +490,63 @@ const handleReportSubmit = async (e) => {
                 {/* Prevent sending messages if the session is completed or canceled */}
                 {!isChatBlocked && <MessageInput sendMessage={handleSendMessage} />}
 
-                {/* Schedule Next Meeting Button */}
-                <div className="flex flex-wrap justify-center gap-4 mt-2">
-                  <div className="mt-6 flex space-x-4">
-                    {shouldShowScheduleButton && (
-                      <button
-                        onClick={openScheduleModal}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition duration-300 ease-in-out"
-                      >
-                        <FiCalendar /> Schedule Next Meeting
-                      </button>
+                {/* Buttons Row */}
+                <div className="flex flex-wrap justify-center items-center gap-4 mt-4">
 
+                  {/* Schedule Next Meeting Button */}
+                  {shouldShowScheduleButton && (
+                    <button
+                      onClick={openScheduleModal}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition duration-300 ease-in-out"
+                    >
+                      <FiCalendar /> Schedule Next Meeting
+                    </button>
+                  )}
 
-                    )}
-                  </div>
-
-                  {/* Mark as Completed or Canceled */}
+                  {/* Mark as Completed */}
                   {!isChatBlocked && !isSessionCompletedOrCanceled && (
-                    <div className="mt-6 flex space-x-4">
+                    <>
                       <button
                         onClick={() => handleMarkSession('completed')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
                       >
                         Mark as Completed
                       </button>
+
+                      {/* Mark as Canceled */}
                       <button
                         onClick={() => handleMarkSession('canceled')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
+                        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
                       >
                         Mark as Canceled
                       </button>
-                    </div>
+                    </>
                   )}
+
+                  {/* Report User Button */}
+                  <button
+                    onClick={openReportModal}
+                    className="flex items-center gap-2 py-2 px-4 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+                  >
+                    <IoMdWarning className="text-xl" />
+                    <span>Report User</span>
+                  </button>
 
                   {/* Feedback Button */}
                   {!isChatBlocked && !bothUsersProvidedFeedback && (
                     <button
                       onClick={openFeedbackModal}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mt-6 transition duration-300 ease-in-out"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
                     >
                       Provide Feedback
                     </button>
+                  )}
+
+                  {isMenuOpen && (
+                    <div
+                      className="fixed inset-0 z-30 bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 md:hidden"
+                      onClick={() => setIsMenuOpen(false)}
+                    ></div>
                   )}
 
                   {/* Close Button */}
@@ -599,95 +632,88 @@ const handleReportSubmit = async (e) => {
                       <button
                         onClick={closeScheduleModal}
                         className="absolute top-3 right-4 text-blue-600 text-2xl hover:text-gray-200 transition"
-                        >
-                          &times;
+                      >
+                        &times;
                       </button>
                     </div>
                   </div>
                 )}
-            
-              {/* Report User Button */}
-              <button
-                onClick={openReportModal}
-                className="report-user-button flex items-center space-x-2 py-2 px-4 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
-              >
-                <IoMdWarning className="text-xl" />
-                <span>Report User</span>
-              </button>
 
-              {/* Report Modal */}
-              {isReportModalOpen && (
-                <div className="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="modal-content bg-white p-6 rounded-lg shadow-lg w-96">
-                    <button
-                      onClick={closeReportModal}
-                      className="close-modal absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                    >
-                      ✖
-                    </button>
-                    <h3 className="text-2xl font-semibold text-gray-800 mb-4">Report User</h3>
-                    <form onSubmit={handleReportSubmit}>
-                      <div className="mb-4">
-                        <label className="font-medium text-gray-700">Reason:</label>
-                        <select
-                          value={reason}
-                          onChange={(e) => setReason(e.target.value)}
-                          required
-                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50"
-                        >
-                          <option value="">Select Reason</option>
-                          <option value="Spam">Spam</option>
-                          <option value="Harassment">Harassment</option>
-                          <option value="Inappropriate Behavior">Inappropriate Behavior</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
 
-                      <div className="mb-4">
-                        <label className="font-medium text-gray-700">Description:</label>
-                        <textarea
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Describe the issue"
-                          required
-                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50 h-32"
-                        />
-                      </div>
+                {/* Report Modal */}
+                {isReportModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 bg-opacity-10 backdrop-blur-sm">
+                    <div className="w-[90%] max-w-md bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 text-white p-8 rounded-2xl shadow-2xl">
+                      <button
+                        onClick={closeReportModal}
+                        className="absolute top-3 right-4 text-blue-600 text-2xl hover:text-gray-200 transition"
+                      >
+                        &times;
+                      </button>
+                      <h3 className="text-2xl font-semibold text-white mb-4">Report User</h3>
+                      <form onSubmit={handleReportSubmit}>
+                        <div className="mb-4">
+                          <label className="font-sm text-white">Reason:</label>
+                          <select
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            required
+                            className="mt-2 w-full p-3 border rounded-lg bg-gray-50 text-black"
+                          >
+                            <option value="">Select Reason</option>
+                            <option value="Spam">Spam</option>
+                            <option value="Harassment">Harassment</option>
+                            <option value="Inappropriate Behavior">Inappropriate Behavior</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
 
-                      <div className="mb-4">
-                        <label className="font-medium text-gray-700">Attach Screenshot (Optional):</label>
-                        <input
-                          type="file"
-                          onChange={(e) => setScreenshot(e.target.files[0])}
-                          accept="image/*"
-                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50"
-                        />
-                      </div>
+                        <div className="mb-4">
+                          <label className="font-sm text-white">Description:</label>
+                          <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe the issue"
+                            required
+                            className="mt-2 w-full p-3 border text-black rounded-lg bg-gray-50 h-32"
+                          />
+                        </div>
 
-                      <div className="flex justify-end">
-                        <button
-                          type="submit"
-                          className="submit-button bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
-                        >
-                          Submit Report
-                        </button>
-                      </div>
-                    </form>
-                    {reportSuccess && (
-                      <div className="mt-4 text-green-600 text-center">
-                        <p>Report submitted successfully!</p>
-                      </div>
-                    )}
+                        <div className="mb-4">
+                          <label className="font-sm text-white">Attach Screenshot (Optional):</label>
+                          <input
+                            type="file"
+                            onChange={(e) => setScreenshot(e.target.files[0])}
+                            accept="image/*"
+                            className="mt-2 w-full p-3 border rounded-lg bg-gray-50 text-black"
+                            placeholder="Upload Screenshot"
+                          />
+                        </div>
+
+                        <div className="flex justify-end">
+                          <button
+                            type="submit"
+                            className="bg-white text-[#4361ee] border border-[#4361ee] py-3 px-4 rounded-lg mt-6 w-full transition duration-300 text-lg font-semibold"
+                          >
+                            Submit Report
+                          </button>
+                        </div>
+                      </form>
+                      {reportSuccess && (
+                        <div className="mt-4 text-green-600 text-center">
+                          <p>Report submitted successfully!</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
+          </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
     </ div>
   );
 };
