@@ -5,6 +5,9 @@ import Navbar from '../components/navbar/Navbar'; // Import Navbar
 import MessageInput from '../components/chat/MessageInput'; // Import MessageInput
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiCalendar, FiClock } from 'react-icons/fi';
+import Footer from "../components/footer/Footer";
+import Background from "../components/background/Background";
+import "../components/background/Background.css";
 import { IoMdWarning } from 'react-icons/io'; // Importing a warning icon for the button
 
 const ChatPage = () => {
@@ -136,7 +139,7 @@ const ChatPage = () => {
       fetchMessages();
     }
   }, [selectedConnection]);
-  
+
   // Handle selecting a connection for chat
   const handleSelectConnection = (connection) => {
     setSelectedConnection(connection);
@@ -230,7 +233,7 @@ const ChatPage = () => {
       console.error('Error scheduling session:', error);
     }
   };
-      
+
   // Handle marking session as completed or canceled
   const handleMarkSession = async (status) => {
     try {
@@ -353,10 +356,10 @@ const handleReportSubmit = async (e) => {
   const isFeedbackGivenByLoggedInUser = isUser1
     ? selectedConnection?.feedbackByUser1 // Assuming these fields contain the feedback for user1
     : isUser2
-    ? selectedConnection?.feedbackByUser2 // Assuming these fields contain the feedback for user2
-    : false; // If neither, feedback hasn't been provided by the logged-in user
+      ? selectedConnection?.feedbackByUser2 // Assuming these fields contain the feedback for user2
+      : false; // If neither, feedback hasn't been provided by the logged-in user
 
-   // Check if both users have provided feedback
+  // Check if both users have provided feedback
   const bothUsersProvidedFeedback = selectedConnection?.feedbackByUser1 && selectedConnection?.feedbackByUser2;
 
   // Check if session is completed or canceled
@@ -372,190 +375,213 @@ const handleReportSubmit = async (e) => {
   const shouldShowScheduleButton = !isSessionCompletedOrCanceled && !bothUsersProvidedFeedback;
 
   return (
-    <div className="chat-page min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        {/* Left Panel: List of Connections */}
-        <div className="left-panel w-1/4 bg-gray-100 p-6 rounded-xl shadow-xl">
-          <h2 className="text-2xl font-semibold text-gray-700">Connections</h2>
-          <div className="space-y-4 mt-6">
-            {connections.length > 0 ? (
-              connections.map((connection) => (
-                <div
-                  key={connection._id}
-                  className="bg-white p-4 rounded-lg shadow-lg cursor-pointer hover:bg-indigo-100"
-                  onClick={() => handleSelectConnection(connection)}
-                >
-                  <p className="font-semibold text-gray-800">{connection.userId1?.name || 'Unknown'}</p>
-                  <p className="text-gray-500">{connection.sessionDate} at {connection.sessionTime}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No connections available.</p>
-            )}
+
+    <div className="min-h-screen relative">
+      <Background />
+      <div className="chat-page flex flex-col">
+        <Navbar />
+        <div className="flex flex-1">
+          {/* Left Panel: List of Connections */}
+          <div className="left-panel w-1/4 p-6 max-h-screen overflow-auto bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
+
+
+            <h2 className="text-2xl font-semibold text-gray-800">Connections</h2>
+            <div className="space-y-4 mt-6">
+              {connections.length > 0 ? (
+                connections.map((connection) => (
+                  <div
+                    key={connection._id}
+                    className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-4 rounded-lg shadow-lg cursor-pointer hover:bg-indigo-100"
+                    onClick={() => handleSelectConnection(connection)}
+                  >
+                    <p className="font-semibold text-white">{connection.userId1?.name || 'Unknown'}</p>
+                    <p className="text-gray-600">Skill: {connection.skill || 'Eclipse OCL' }</p>
+                    <p className="text-white">{connection.sessionDate} at {connection.sessionTime}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-white">No connections available.</p>
+              )}
+            </div>
           </div>
-        </div>
+          {/* Right Panel: Chat with Selected Connection */}
+          <div className="chat-container w-3/4 min-h-screen p-2 bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
 
-        {/* Right Panel: Chat with Selected Connection */}
-        <div className="chat-container w-3/4 p-6 bg-white rounded-xl shadow-xl">
-          {selectedConnection && (
-            <>
-              <h2 className="text-3xl font-semibold mb-4 text-gray-800">
-                Chat with {selectedConnection.userId1?.name || 'Unknown'}
-              </h2>
-              
-              <div className="messages-container bg-gray-50 p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
-                {messages.length > 0 ? (
-                  messages.map((msg, index) => (
-                    <div 
-                      key={index} 
-                      className={`message mb-4 p-4 bg-white rounded-lg shadow-sm ${msg.senderId && msg.senderId._id === loggedInUser._id ? 'text-right bg-blue-600 text-white' : 'text-left bg-gray-200 text-black'}`}
-                    >
-                      <p>
-                        <strong>{msg.senderName}: </strong>{msg.content}
-                      </p>
-                      {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs mt-2" />}
-                      {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}
-                      {msg.mediaType === 'video' && <video controls><source src={msg.mediaUrl} /></video>}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400">No messages yet</p>
+
+            {selectedConnection && (
+              <>
+                <h2 className="text-3xl font-semibold mb-4 text-gray-800">
+                  Chat with {selectedConnection.userId1?.name || 'Unknown'}
+                </h2>
+                 <p className="text-gray-600">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
+                <div className="messages-container bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200  p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
+                  {messages.length > 0 ? (
+                    messages.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`message mb-4 p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg ${msg.senderId && msg.senderId._id === loggedInUser._id ? 'text-right bg-blue-600 text-white' : 'text-left bg-gray-200 text-white'}`}
+                      >
+                        <p>
+                          <strong>{msg.senderName}: </strong>{msg.content}
+                        </p>
+                        {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs mt-2" />}
+                        {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}
+                        {msg.mediaType === 'video' && <video controls><source src={msg.mediaUrl} /></video>}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">No messages yet</p>
+                  )}
+                </div>
+
+
+                {/* Feedback Display if session is completed or canceled */}
+                {isSessionCompletedOrCanceled && (
+                  <div className="feedback-display bg-white p-4 rounded-lg shadow-lg mb-6">
+                    <h3 className="font-semibold text-gray-800">Feedback from User 1:</h3>
+                    <p>{selectedConnection?.feedbackByUser1}</p>
+
+                    <h3 className="font-semibold text-gray-800 mt-4">Feedback from User 2:</h3>
+                    <p>{selectedConnection?.feedbackByUser2}</p>
+                  </div>
                 )}
-              </div>
+
+                {/* Prevent sending messages if the session is completed or canceled */}
+                {!isChatBlocked && <MessageInput sendMessage={handleSendMessage} />}
+
+                {/* Schedule Next Meeting Button */}
+                <div className="flex flex-wrap justify-center gap-4 mt-2">
+                  <div className="mt-6 flex space-x-4">
+                    {shouldShowScheduleButton && (
+                      <button
+                        onClick={openScheduleModal}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition duration-300 ease-in-out"
+                      >
+                        <FiCalendar /> Schedule Next Meeting
+                      </button>
 
 
-              {/* Feedback Display if session is completed or canceled */}
-              {isSessionCompletedOrCanceled && (
-                <div className="feedback-display bg-white p-4 rounded-lg shadow-lg mb-6">
-                  <h3 className="font-semibold text-gray-800">Feedback from User 1:</h3>
-                  <p>{selectedConnection?.feedbackByUser1}</p>
-
-                  <h3 className="font-semibold text-gray-800 mt-4">Feedback from User 2:</h3>
-                  <p>{selectedConnection?.feedbackByUser2}</p>
-                </div>
-              )}
-
-              {/* Prevent sending messages if the session is completed or canceled */}
-              {!isChatBlocked && <MessageInput sendMessage={handleSendMessage} />}
-
-              {/* Schedule Next Meeting Button */}
-              {shouldShowScheduleButton && (
-                <button
-                  onClick={openScheduleModal}
-                  className="bg-blue-600 text-white p-3 rounded-lg mt-6 transition duration-300 ease-in-out transform hover:bg-blue-700"
-                >
-                  Schedule Next Meeting
-                </button>
-              )}
-
-              {/* Mark as Completed or Canceled */}
-              {!isChatBlocked && !isSessionCompletedOrCanceled && (
-                <div className="mt-6 flex space-x-4">
-                  <button
-                    onClick={() => handleMarkSession('completed')}
-                    className="bg-green-600 text-white p-4 rounded-lg w-48 hover:bg-green-700 transition duration-300 ease-in-out"
-                  >
-                    Mark as Completed
-                  </button>
-                  <button
-                    onClick={() => handleMarkSession('canceled')}
-                    className="bg-red-600 text-white p-4 rounded-lg w-48 hover:bg-red-700 transition duration-300 ease-in-out"
-                  >
-                    Mark as Canceled
-                  </button>
-                </div>
-              )}
-
-              {/* Feedback Button */}
-              {!isChatBlocked && !bothUsersProvidedFeedback && (
-                <button
-                  onClick={openFeedbackModal}
-                  className="bg-yellow-500 text-white p-3 rounded-lg mt-6 transition duration-300 ease-in-out transform hover:bg-yellow-600"
-                >
-                  Provide Feedback
-                </button>
-              )}
-
-              {/* Feedback Modal (only show if feedback hasn't been given yet) */}
-              {isFeedbackModalOpen && (
-                <div className="feedback-modal bg-white p-6 rounded-lg shadow-lg fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="modal-content w-96 bg-white p-6 rounded-lg relative">
-                    {/* Close Button for the Modal */}
-                    <button
-                      onClick={closeFeedbackModal}
-                      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                    >
-                      ✖
-                    </button>
-                    <h3 className="text-xl font-semibold text-gray-800">Provide Feedback</h3>
-                    <select
-                      onChange={(e) => setRating(e.target.value)}
-                      value={rating}
-                      className="mt-4 w-full p-2 border rounded-lg bg-gray-50"
-                    >
-                      {[...Array(5)].map((_, index) => (
-                        <option key={index} value={index + 1}>
-                          {index + 1} Star{index + 1 > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <textarea
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                      placeholder="Write your feedback"
-                      className="mt-4 w-full p-2 border rounded-lg bg-gray-50"
-                    />
-                    <button
-                      onClick={() => handleMarkSession('completed')}
-                      className="bg-green-600 text-white p-4 rounded-lg mt-6 w-full hover:bg-green-700 transition duration-300 ease-in-out"
-                    >
-                      Submit Feedback
-                    </button>
+                    )}
                   </div>
-                </div>
-              )}
 
-              {/* Schedule Modal */}
-              {isScheduleModalOpen  && (
-                <div className="modal bg-white p-6 rounded-lg shadow-lg fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="modal-content w-96 p-6">
-                    <h2 className="text-xl">Schedule Next Meeting</h2>
-                    <div className="flex flex-col space-y-2 mt-4">
-                      <label className="font-medium">
-                        <FiCalendar /> Select Date:
-                        <input
-                          type="date"
-                          value={scheduledDate}
-                          onChange={(e) => setScheduledDate(e.target.value)}
-                          className="border p-2 rounded-lg"
-                        />
-                      </label>
-                      <label className="font-medium">
-                        <FiClock /> Select Time:
-                        <input
-                          type="time"
-                          value={scheduledTime}
-                          onChange={(e) => setScheduledTime(e.target.value)}
-                          className="border p-2 rounded-lg"
-                        />
-                      </label>
+                  {/* Mark as Completed or Canceled */}
+                  {!isChatBlocked && !isSessionCompletedOrCanceled && (
+                    <div className="mt-6 flex space-x-4">
+                      <button
+                        onClick={() => handleMarkSession('completed')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
+                      >
+                        Mark as Completed
+                      </button>
+                      <button
+                        onClick={() => handleMarkSession('canceled')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-300 ease-in-out"
+                      >
+                        Mark as Canceled
+                      </button>
                     </div>
+                  )}
+
+                  {/* Feedback Button */}
+                  {!isChatBlocked && !bothUsersProvidedFeedback && (
                     <button
-                      onClick={handleScheduleSession}
-                      className="bg-green-600 text-white p-4 rounded-lg mt-6 w-full hover:bg-green-700 transition duration-300 ease-in-out"
+                      onClick={openFeedbackModal}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg mt-6 transition duration-300 ease-in-out"
                     >
-                      Confirm Schedule
+                      Provide Feedback
                     </button>
-                    <button
-                      onClick={closeScheduleModal}
-                      className="bg-red-600 text-white p-4 rounded-lg mt-2 w-full hover:bg-red-700 transition duration-300 ease-in-out"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  )}
+
+                  {/* Close Button */}
+                  {/* Feedback Modal (only show if feedback hasn't been given yet) */}
+                  {isFeedbackModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 bg-opacity-10 backdrop-blur-sm">
+                      <div className="w-[90%] max-w-md bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 text-white p-8 rounded-2xl shadow-2xl">
+                        <button
+                          onClick={closeFeedbackModal}
+                          className="absolute top-3 right-4 text-blue-600 text-2xl hover:text-gray-200 transition"
+                        >
+                          &times;
+                        </button>
+
+                        <h3 className="text-2xl font-bold mb-5 text-center">We’d Love Your Feedback</h3>
+
+                        <select
+                          onChange={(e) => setRating(e.target.value)}
+                          value={rating}
+                          className="w-full p-3 rounded-lg bg-white text-black font-medium focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        >
+                          {[...Array(5)].map((_, index) => (
+                            <option key={index} value={index + 1}>
+                              {index + 1} Star{index + 1 > 1 ? 's' : ''}
+                            </option>
+                          ))}
+                        </select>
+
+                        <textarea
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value)}
+                          placeholder="Write your feedback..."
+                          rows="4"
+                          className="mt-4 w-full p-3 rounded-lg bg-white text-black font-medium focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        />
+
+                        <button
+                          onClick={() => handleMarkSession('completed')}
+                          className="bg-white text-[#4361ee] border border-[#4361ee]  py-3 px-4 rounded-lg mt-6 w-full transition duration-300 text-lg font-semibold"
+                        >
+                          Submit Feedback
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Schedule Modal */}
+                {isScheduleModalOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 bg-opacity-10 backdrop-blur-sm">
+                    <div className="w-[90%] max-w-md bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 text-white p-8 rounded-2xl shadow-2xl">
+                      <h2 className="text-2xl font-bold mb-5 text-center">Schedule Your Next Meeting</h2>
+
+                      <div className="flex flex-col gap-4">
+                        <label className="flex flex-col font-medium">
+                          <span className="mb-1">Select Date:</span>
+                          <input
+                            type="date"
+                            value={scheduledDate}
+                            onChange={(e) => setScheduledDate(e.target.value)}
+                            className="p-3 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          />
+                        </label>
+
+                        <label className="flex flex-col font-medium">
+                          <span className="mb-1"> Select Time:</span>
+                          <input
+                            type="time"
+                            value={scheduledTime}
+                            onChange={(e) => setScheduledTime(e.target.value)}
+                            className="p-3 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          />
+                        </label>
+                      </div>
+
+                      <button
+                        onClick={handleScheduleSession}
+                        className="bg-white text-[#4361ee] border border-[#4361ee] py-3 px-4 rounded-lg mt-6 w-full transition duration-300 text-lg font-semibold"
+                      >
+                        Confirm Schedule
+                      </button>
+
+                      <button
+                        onClick={closeScheduleModal}
+                        className="absolute top-3 right-4 text-blue-600 text-2xl hover:text-gray-200 transition"
+                        >
+                          &times;
+                      </button>
+                    </div>
+                  </div>
+                )}
+            
               {/* Report User Button */}
               <button
                 onClick={openReportModal}
@@ -633,10 +659,14 @@ const handleReportSubmit = async (e) => {
               )}
             </>
           )}
+
         </div>
       </div>
+      <Footer />
     </div>
+    </ div>
   );
 };
+
 
 export default ChatPage;

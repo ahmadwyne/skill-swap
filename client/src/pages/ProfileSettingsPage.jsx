@@ -50,8 +50,8 @@ const ProfileSettingsPage = () => {
           profilePicture: data.profilePicture || '',
           status: data.status || '',
           socials: data.socials || { linkedin: '', facebook: '', twitter: '' },
-          skillsToTeach: (data.skillsToTeach || []).join(','),
-          skillsToLearn: (data.skillsToLearn || []).join(',')
+          skillsToTeach: data.skillsToTeach ? data.skillsToTeach.join(', ') : '',
+          skillsToLearn: data.skillsToLearn ? data.skillsToLearn.join(', ') : ''
         });
         if (data.profilePicture) {
           setImagePreview(
@@ -73,40 +73,49 @@ const ProfileSettingsPage = () => {
     : defaultAvatar;
 
   // Handle profile update
-  const handleUpdate = async () => {
-    const payload = new FormData();
-    payload.append('name', formData.name);
-    payload.append('status', formData.status);
-    payload.append('skillsToTeach', formData.skillsToTeach);
-    payload.append('skillsToLearn', formData.skillsToLearn);
-    payload.append('socials[linkedin]', formData.socials.linkedin);
-    payload.append('socials[facebook]', formData.socials.facebook);
-    payload.append('socials[twitter]', formData.socials.twitter);
 
-    if (formData.profilePicture instanceof File) {
-      payload.append('profilePicture', formData.profilePicture);
-    }
+const handleUpdate = async () => {
+  const payload = new FormData();
+  payload.append('name', formData.name);
+  payload.append('status', formData.status);
 
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.put(
-        'http://localhost:5000/api/users/profile',
-        payload,
-        {
-          headers: {
-            'x-auth-token': token,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-      dispatch(setUser(res.data));
-      setMessage('Profile updated successfully!');
-      navigate('/profile');
-    } catch {
-      setMessage('Update failed. Please try again.');
-    }
-  };
+  // Add each skill as a separate field in FormData
+  const skillsToTeachArray = formData.skillsToTeach.split(',').map((s) => s.trim()).filter((s) => s !== ''); // Create an array of skills
+  const skillsToLearnArray = formData.skillsToLearn.split(',').map((s) => s.trim()).filter((s) => s !== ''); // Create an array of skills
 
+  // Append each skill separately to FormData
+  skillsToTeachArray.forEach((skill, index) => {
+    payload.append('skillsToTeach[]', skill); // The '[]' syntax will ensure they are treated as an array
+  });
+
+  skillsToLearnArray.forEach((skill, index) => {
+    payload.append('skillsToLearn[]', skill); // Same for skillsToLearn
+  });
+
+  // Add socials and profile picture as usual
+  payload.append('socials[linkedin]', formData.socials.linkedin);
+  payload.append('socials[facebook]', formData.socials.facebook);
+  payload.append('socials[twitter]', formData.socials.twitter);
+
+  if (formData.profilePicture instanceof File) {
+    payload.append('profilePicture', formData.profilePicture);
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.put('http://localhost:5000/api/users/profile', payload, {
+      headers: {
+        'x-auth-token': token,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    dispatch(setUser(res.data));
+    setMessage('Profile updated successfully!');
+    navigate('/profile');
+  } catch {
+    setMessage('Update failed. Please try again.');
+  }
+};
   // Handle password change
   const handlePasswordChange = async () => {
     if (passwords.newPassword !== passwords.confirmNewPassword) {

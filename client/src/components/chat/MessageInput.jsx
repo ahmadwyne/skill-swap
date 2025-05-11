@@ -1,5 +1,7 @@
 // src/components/chat/MessageInput.jsx
 import React, { useState } from 'react';
+import { FaPaperPlane } from 'react-icons/fa';
+import { AiOutlineLink } from 'react-icons/ai';
 
 const MessageInput = ({ sendMessage }) => {
   const [message, setMessage] = useState('');
@@ -43,13 +45,13 @@ const MessageInput = ({ sendMessage }) => {
   };
 
   return (
-    <div className="message-input flex items-center p-4 bg-white rounded-lg shadow-md">
+    <div className="message-input flex items-center p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg shadow-md">
       <input
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type a message..."
-        className="flex-1 p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+        className="flex-1 p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-white"
       />
       <input
         type="file"
@@ -59,9 +61,9 @@ const MessageInput = ({ sendMessage }) => {
       />
       <button
         onClick={handleAttachLink}
-        className="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+        className="ml-2 bg-blue-600 text-white p-2 placeholder-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
       >
-        Attach Link
+       <AiOutlineLink className="text-white text-xl" />
       </button>
 
       {showLinkInput && (
@@ -70,7 +72,7 @@ const MessageInput = ({ sendMessage }) => {
           value={link}
           onChange={handleLinkChange}
           placeholder="Enter a URL"
-          className="ml-2 p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="ml-2 p-2 border-2 placeholder-white border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       )}
 
@@ -84,9 +86,9 @@ const MessageInput = ({ sendMessage }) => {
 
       <button
         onClick={handleSendMessage}
-        className="ml-4 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+        className="ml-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
       >
-        Send
+       <FaPaperPlane className="text-white text-xl" />
       </button>
     </div>
   );

@@ -504,6 +504,7 @@ const ProfilePage = () => {
                             {getSessionPartnerName(s, user._id)}
                           </span>
                         </div>
+                        <p className="text-gray-600">{s.skill}</p> {/* Display the skill */}
                         <span className="text-sm text-gray-500">
                           {formatDate(s.sessionDate)}
                         </span>

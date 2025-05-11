@@ -2,6 +2,7 @@
 
 const User = require('../models/User');
 const Session = require('../models/Session');
+const Message = require('../models/Message');
 const Report = require('../models/Report');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -67,6 +68,26 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// ─── Unblock a user ────────────────────────────────────────────────
+const unblockUser = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.status = '';           // clear the status
+    await user.save();
+
+    res.status(200).json({ message: 'User has been unblocked', userId: id });
+  } catch (err) {
+    console.error('Error unblocking user:', err);
+    res.status(500).json({ message: 'Server error unblocking user' });
+  }
+};
+
 // ─── Get all reports ─────────────────────────────────────────────
 const getAllReports = async (req, res) => {
   try {
@@ -90,6 +111,44 @@ const resolveReport = async (req, res) => {
     res.status(200).json({ message: 'Report resolved', report });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+// ─── Get all messages for a given session ───────────────────────────────────
+const getSessionChats = async (req, res) => {
+  const { sessionId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+    return res.status(400).json({ message: 'Invalid session ID' });
+  }
+  try {
+    const chats = await Message.find({ sessionId })
+      .sort({ timestamp: 1 })
+      .populate('senderId', 'name')
+      .populate('receiverId', 'name');
+
+    res.status(200).json(chats);
+  } catch (err) {
+    console.error('Error fetching session chats:', err);
+    res.status(500).json({ message: 'Server error fetching chats' });
+  }
+};
+
+// ─── Block a user ───────────────────────────────────────────────────
+const blockUser = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.status = 'blocked';
+    await user.save();
+
+    res.status(200).json({ message: 'User has been blocked', userId: id });
+  } catch (err) {
+    console.error('Error blocking user:', err);
+    res.status(500).json({ message: 'Server error blocking user' });
   }
 };
 
@@ -249,5 +308,8 @@ module.exports = {
   getProfile,
   updateProfile,
   changePassword,
-  getEngagementStats
+  getEngagementStats,
+  getSessionChats,
+  blockUser,
+  unblockUser
 };
