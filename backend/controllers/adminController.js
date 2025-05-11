@@ -2,6 +2,7 @@
 
 const User = require('../models/User');
 const Session = require('../models/Session');
+const Message = require('../models/Message');
 const Report = require('../models/Report');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -92,7 +93,24 @@ const resolveReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// ─── Get all messages for a given session ───────────────────────────────────
+const getSessionChats = async (req, res) => {
+  const { sessionId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+    return res.status(400).json({ message: 'Invalid session ID' });
+  }
+  try {
+    const chats = await Message.find({ sessionId })
+      .sort({ timestamp: 1 })
+      .populate('senderId', 'name')
+      .populate('receiverId', 'name');
 
+    res.status(200).json(chats);
+  } catch (err) {
+    console.error('Error fetching session chats:', err);
+    res.status(500).json({ message: 'Server error fetching chats' });
+  }
+};
 // ─── Get analytics ───────────────────────────────────────────────
 const getAnalytics = async (req, res) => {
   try {
@@ -249,5 +267,6 @@ module.exports = {
   getProfile,
   updateProfile,
   changePassword,
-  getEngagementStats
+  getEngagementStats,
+  getSessionChats
 };
