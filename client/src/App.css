@@ -52,7 +52,7 @@ body,
 .Toastify__progress-bar {
   background-color: #ffffff !important; /* Dark Blue color for the progress bar */
 }
-/* Glassmorphism Section */
+
 .glass-panel {
   backdrop-filter: blur(16px);
   background: rgba(255, 255, 255, 0.1);
@@ -70,6 +70,5 @@ body,
   right: 0;
   z-index: 1000; /* Ensure it appears above other elements */
   background-color: white; /* Make sure it's visible */
-  box-shadow: 0px 4px 6px rgba(0,0,0,0.1); /* Add shadow */
-
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow */
 }

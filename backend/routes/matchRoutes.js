@@ -1,5 +1,5 @@
 // routes/matchRoutes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const User = require('../models/User');  // Make sure this import is correct
 const {verifyToken, ensureAdmin} = require('../middlewares/auth'); // Ensure the auth middleware is correct
@@ -20,12 +20,12 @@ const matchSkills = (skillsToTeach, skillsToLearn) => {
 };
 
 // Route to fetch skill matches for the current user
-router.get('/', verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     // Find the current user from JWT token
     const currentUser = await User.findById(req.user.id);
     if (!currentUser) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ msg: "User not found" });
     }
 
     // Find all other users in the database
@@ -33,14 +33,17 @@ router.get('/', verifyToken, async (req, res) => {
 
     // Create a list of matches between the current user and other users
     const matches = users.map((user) => {
-      const matchedSkills = matchSkills(currentUser.skillsToTeach, user.skillsToLearn);
+      const matchedSkills = matchSkills(
+        currentUser.skillsToTeach,
+        user.skillsToLearn
+      );
       return { user, matchedSkills };
     });
 
     res.json(matches); // Return the list of matches
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 });
 
