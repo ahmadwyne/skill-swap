@@ -166,9 +166,8 @@ const ProfileSettingsPage = () => {
                 <FaEdit className="text-white bg-gray-700 rounded-full p-1.5 cursor-pointer hover:bg-blue-500 transition" />
               </div>
             </div>
-            </div>
             
-            {/* Pencil Icon */}            
+          {/* Pencil Icon */}            
           </label>
           <input
             type="file"
