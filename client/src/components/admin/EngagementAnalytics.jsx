@@ -41,7 +41,11 @@ const UserCard = ({ user, rank }) => {
       <div className="flex items-center px-6 py-4 bg-blue-900 text-white">
         <img
           className="h-14 w-14 rounded-full object-cover border-2 border-white"
-          src={profilePicture || defaultAvatar}
+          src={
+            profilePicture
+              ? `http://localhost:5000/uploads/profile-pictures/${profilePicture}`
+              : defaultAvatar
+          }
           alt={`${name}'s avatar`}
           onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = defaultAvatar; }}
         />
