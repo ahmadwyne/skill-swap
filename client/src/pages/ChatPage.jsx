@@ -444,7 +444,9 @@ const handleReportSubmit = async (e) => {
                         className={`message mb-4 p-4 bg-gradient-to-br from-blue-600 via-blue-400 to-blue-300 rounded-lg ${msg.senderId && msg.senderId._id === loggedInUser._id ? 'text-right bg-blue-600 text-white' : 'text-left bg-gray-200 text-white'}`}
                       >
                         <p>
-                          <strong>{msg.senderName}: </strong>{msg.content}
+                          <strong>{msg.senderName}: </strong>
+                          {/* Render the message content as HTML */}
+                          <span dangerouslySetInnerHTML={{ __html: msg.content }} />
                         </p>
                         {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs mt-2" />}
                         {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}
