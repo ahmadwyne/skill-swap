@@ -18,6 +18,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const { setSocketIO: setSessionSocketIO } = require('./controllers/sessionController');
 const { setSocket: setNotificationSocketIO } = require('./controllers/notificationController');
 const adminRoutes = require('./routes/adminRoutes');  // ← Admin dashboard routes
+const reportRoutes = require('./routes/reportRoutes'); // Import reportRoutes
 
 dotenv.config();
 
@@ -91,6 +92,7 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);  // ← Mount Admin Dashboard routes
+app.use('/api/reports', reportRoutes);  // ← Mount Admin Dashboard routes
 
 // ✅ Session namespace handling
 sessionSocket.on('connection', (socket) => {
