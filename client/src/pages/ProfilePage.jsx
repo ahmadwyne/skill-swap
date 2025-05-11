@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/navbar/Navbar";
 import NotificationBell from "../components/NotificationBell";
-import ProfileCard from '../components/ProfileCard';  // Import ProfileCard
+import ProfileCard from "../components/ProfileCard"; // Import ProfileCard
 import { FaLinkedin, FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FiEdit, FiCalendar, FiClock } from "react-icons/fi";
@@ -13,6 +13,8 @@ import { setNotifications } from "../redux/slices/notificationSlice";
 import Background from "../components/background/Background";
 import "../components/background/Background.css";
 import Footer from "../components/footer/Footer";
+import defaultAvatar from "../assets/avatar.jpeg";
+
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -176,7 +178,7 @@ const ProfilePage = () => {
                 src={
                   user?.profilePicture
                     ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}`
-                    : "/default-avatar.png"
+                    : defaultAvatar // Path to your default avatar image
                 }
                 alt="Profile"
                 className="w-full h-full object-cover"
@@ -430,10 +432,10 @@ const ProfilePage = () => {
             >
               <motion.div
                 className="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg"
-                initial={{ y: '100vh', opacity: 0 }}
+                initial={{ y: "100vh", opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                exit={{ y: '100vh', opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                exit={{ y: "100vh", opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-left">
                   Update Your Skills
@@ -442,30 +444,30 @@ const ProfilePage = () => {
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 {success && <p className="text-green-500 mb-4">{success}</p>}
 
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2 text-left">
-                  Skills You Can Teach
-                </label>
-                <input
-                  type="text"
-                  value={modalTeach}
-                  onChange={(e) => setModalTeach(e.target.value)}
-                  className="w-full border rounded-lg p-3"
-                  placeholder="e.g. JavaScript, Python"
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-gray-700 mb-2 text-left">
-                  Skills You Want to Learn
-                </label>
-                <input
-                  type="text"
-                  value={modalLearn}
-                  onChange={(e) => setModalLearn(e.target.value)}
-                  className="w-full border rounded-lg p-3"
-                  placeholder="e.g. React, Data Science"
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2 text-left">
+                    Skills You Can Teach
+                  </label>
+                  <input
+                    type="text"
+                    value={modalTeach}
+                    onChange={(e) => setModalTeach(e.target.value)}
+                    className="w-full border rounded-lg p-3"
+                    placeholder="e.g. JavaScript, Python"
+                  />
+                </div>
+                <div className="mb-6">
+                  <label className="block text-gray-700 mb-2 text-left">
+                    Skills You Want to Learn
+                  </label>
+                  <input
+                    type="text"
+                    value={modalLearn}
+                    onChange={(e) => setModalLearn(e.target.value)}
+                    className="w-full border rounded-lg p-3"
+                    placeholder="e.g. React, Data Science"
+                  />
+                </div>
 
                 <div className="flex justify-end space-x-4">
                   <button

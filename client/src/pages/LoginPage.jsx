@@ -114,14 +114,17 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Email Field */}
             <div className="relative">
-              <FiMail className="absolute top-3.5 left-3 text-blue-500" />
+              <FiMail className="absolute top-1/2 left-3 transform -translate-y-1/2 text-blue-500" />
               <input
                 type="email"
                 placeholder="Enter Email"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (error === "Please enter your email address." || error === "Please enter a valid email address.") {
+                  if (
+                    error === "Please enter your email address." ||
+                    error === "Please enter a valid email address."
+                  ) {
                     setError(""); // Clear error when user starts typing
                   }
                 }}
@@ -131,7 +134,7 @@ const LoginPage = () => {
 
             {/* Password Field */}
             <div className="relative">
-              <FiLock className="absolute top-3.5 left-3 text-blue-500" />
+              <FiLock className="absolute top-1/2 left-3 transform -translate-y-1/2 text-blue-500" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter Password"
@@ -145,7 +148,7 @@ const LoginPage = () => {
                 className="pl-10 pr-10 py-2 sm:py-3 w-full rounded-full border border-gray-300 outline-none text-sm sm:text-base md:text-lg text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
               <div
-                className="absolute top-3.5 right-3 text-blue-500 cursor-pointer"
+                className="absolute top-1/2 right-3 transform -translate-y-1/2 text-blue-500 cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}

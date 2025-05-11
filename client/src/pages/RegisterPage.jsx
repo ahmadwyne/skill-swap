@@ -49,6 +49,12 @@ const RegisterPage = () => {
         }
       );
       setSuccessMessage("Registration successful! Please log in.");
+
+      // Clear the fields after successful registration
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (err) {
       setError(err.response?.data?.msg || "Something went wrong!");
     }
@@ -86,7 +92,9 @@ const RegisterPage = () => {
           </h2>
 
           {successMessage && (
-            <p className="text-green-100 text-center mb-4">{successMessage}</p>
+            <p className="text-green-500 font-semibold text-center mb-4">
+              {successMessage}
+            </p>
           )}
           {error && (
             <p className="text-red-500 font-semibold text-center mb-3">
@@ -111,7 +119,7 @@ const RegisterPage = () => {
                   if (error === "Please enter your full name.") setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="off"
-                className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-base text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -124,11 +132,10 @@ const RegisterPage = () => {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  if (error === "Please enter a valid email address.")
-                    setError(""); // Clear error when user starts typing
+                  if (error === "Please enter a valid email address.") setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="off"
-                className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 outline-none text-base text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -141,11 +148,10 @@ const RegisterPage = () => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error === "Password must be at least 6 characters long.")
-                    setError(""); // Clear error when user starts typing
+                  if (error === "Password must be at least 6 characters long.") setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="new-password"
-                className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-base text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
               <div
                 className="absolute top-3.5 right-3 text-blue-500 cursor-pointer"
@@ -167,17 +173,13 @@ const RegisterPage = () => {
                   if (error === "Passwords do not match!") setError(""); // Clear error when user starts typing
                 }}
                 autoComplete="new-password"
-                className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-sm text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-10 py-3 w-full rounded-full border border-gray-300 outline-none text-base text-gray-900 bg-gray-100 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-blue-500"
               />
               <div
                 className="absolute top-3.5 right-3 text-blue-500 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                {showConfirmPassword ? (
-                  <AiOutlineEyeInvisible />
-                ) : (
-                  <AiOutlineEye />
-                )}
+                {showConfirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
               </div>
             </div>
 
