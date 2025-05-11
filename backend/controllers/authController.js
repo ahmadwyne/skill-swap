@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
- 
+
   if (email === process.env.ADMIN_EMAIL) {
     const adminUser = await User.findOne({ email });
 
@@ -75,6 +75,11 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    // 2️⃣ Reject if blocked
+    if (user.status === 'blocked') {
+      return res.status(403).json({ msg: 'Your account has been blocked. Contact support.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

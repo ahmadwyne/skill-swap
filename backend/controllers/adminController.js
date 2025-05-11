@@ -68,6 +68,26 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// ─── Unblock a user ────────────────────────────────────────────────
+const unblockUser = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.status = '';           // clear the status
+    await user.save();
+
+    res.status(200).json({ message: 'User has been unblocked', userId: id });
+  } catch (err) {
+    console.error('Error unblocking user:', err);
+    res.status(500).json({ message: 'Server error unblocking user' });
+  }
+};
+
 // ─── Get all reports ─────────────────────────────────────────────
 const getAllReports = async (req, res) => {
   try {
@@ -111,6 +131,27 @@ const getSessionChats = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching chats' });
   }
 };
+
+// ─── Block a user ───────────────────────────────────────────────────
+const blockUser = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.status = 'blocked';
+    await user.save();
+
+    res.status(200).json({ message: 'User has been blocked', userId: id });
+  } catch (err) {
+    console.error('Error blocking user:', err);
+    res.status(500).json({ message: 'Server error blocking user' });
+  }
+};
+
 // ─── Get analytics ───────────────────────────────────────────────
 const getAnalytics = async (req, res) => {
   try {
@@ -268,5 +309,7 @@ module.exports = {
   updateProfile,
   changePassword,
   getEngagementStats,
-  getSessionChats
+  getSessionChats,
+  blockUser,
+  unblockUser
 };

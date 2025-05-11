@@ -25,6 +25,10 @@ router.patch('/reports/:id/resolve', adminCtrl.resolveReport);
 // ─── Session chat viewer ────────────────────────────────────────────
 // Fetch all chat messages for a given session
 router.get('/session-chats/:sessionId', adminCtrl.getSessionChats);
+// Block a user (admin only)
+router.patch('/users/:id/block', adminCtrl.blockUser);
+router.patch('/users/:id/unblock', adminCtrl.unblockUser);
+
 
 
 //Analytics routes
