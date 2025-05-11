@@ -17,6 +17,7 @@ const sessionSchema = new mongoose.Schema(
     sessionClosed: { type: Boolean, default: false },
     feedbackGivenByUser1: { type: Boolean, default: false },
     feedbackGivenByUser2: { type: Boolean, default: false },
+    skill: { type: String, required: true },  // Added skill field
   },
   { timestamps: true }
 );

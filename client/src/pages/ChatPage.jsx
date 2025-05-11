@@ -387,6 +387,8 @@ const handleReportSubmit = async (e) => {
                   onClick={() => handleSelectConnection(connection)}
                 >
                   <p className="font-semibold text-gray-800">{connection.userId1?.name || 'Unknown'}</p>
+                  {/* Display the skill here */}
+                  <p className="text-gray-600">Skill: {connection.skill || 'Eclipse OCL' }</p>
                   <p className="text-gray-500">{connection.sessionDate} at {connection.sessionTime}</p>
                 </div>
               ))
@@ -403,7 +405,9 @@ const handleReportSubmit = async (e) => {
               <h2 className="text-3xl font-semibold mb-4 text-gray-800">
                 Chat with {selectedConnection.userId1?.name || 'Unknown'}
               </h2>
-              
+              {/* Display the skill here */}
+              <p className="text-gray-600">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
+
               <div className="messages-container bg-gray-50 p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
                 {messages.length > 0 ? (
                   messages.map((msg, index) => (
