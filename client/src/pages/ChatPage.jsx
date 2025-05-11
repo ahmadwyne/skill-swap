@@ -5,6 +5,7 @@ import Navbar from '../components/navbar/Navbar'; // Import Navbar
 import MessageInput from '../components/chat/MessageInput'; // Import MessageInput
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiCalendar, FiClock } from 'react-icons/fi';
+import { IoMdWarning } from 'react-icons/io'; // Importing a warning icon for the button
 
 const ChatPage = () => {
   const { sessionId } = useParams(); // Get sessionId from URL parameter
@@ -19,6 +20,11 @@ const ChatPage = () => {
   const [notificationSocket, setNotificationSocket] = useState(null); // Notification socket connection
   const [rating, setRating] = useState(1);
   const [feedback, setFeedback] = useState('');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [description, setDescription] = useState('');
+  const [screenshot, setScreenshot] = useState(null);
+  const [reportSuccess, setReportSuccess] = useState(false); // State for success message
   const navigate = useNavigate();
 
   // Fetch accepted session connections
@@ -270,6 +276,72 @@ const ChatPage = () => {
     }
   };
 
+  // Open/close Report Modal
+  const openReportModal = () => {
+    setIsReportModalOpen(true);
+    setReportSuccess(false); // Reset success state when opening the modal
+  };
+
+  const closeReportModal = () => {
+    setIsReportModalOpen(false);
+  };
+
+  // Handle Report Submit
+const handleReportSubmit = async (e) => {
+  e.preventDefault(); // Prevent the default form submit behavior
+
+  // Retrieve the logged-in user from localStorage
+  const loggedInUser = JSON.parse(localStorage.getItem('user'));
+
+  // if (!loggedInUser || !loggedInUser._id) {
+  //   alert('Invalid user. Please log in again.');
+  //   return; // Stop the submission if no valid user is found
+  // }
+
+  // Get sessionId from the selected connection
+  const sessionId = selectedConnection._id;
+
+  // Determine the targetUser from the session
+  const targetUser =
+    selectedConnection.userId1._id === loggedInUser._id
+      ? selectedConnection.userId2._id
+      : selectedConnection.userId1._id;
+
+  if (!targetUser || !sessionId) {
+    alert('Invalid session or target user.');
+    return; // Stop the submission if target user or session is missing
+  }
+
+  const formData = new FormData();
+  formData.append('reason', reason);
+  formData.append('description', description);
+  formData.append('reporter', loggedInUser._id); // Include the logged-in user as the reporter
+  formData.append('targetUser', targetUser); // Include the target user
+  formData.append('session', sessionId); // Include the session ID
+
+  if (screenshot) {
+    formData.append('screenshot', screenshot); // Attach screenshot if available
+  }
+
+  const token = localStorage.getItem('token');
+
+  try {
+    const response = await axios.post('http://localhost:5000/api/reports', formData, {
+      headers: { 'x-auth-token': token },
+    });
+
+    // Success: Reset form and show success message
+    alert('Report submitted successfully');
+    setReason('');
+    setDescription('');
+    setScreenshot(null);
+    closeReportModal();
+  } catch (error) {
+    console.error('Error submitting report:', error);
+    alert('Error submitting report: ' + (error.response?.data?.message || error.message));
+  }
+};
+
   // Get the logged-in user
   const loggedInUser = JSON.parse(localStorage.getItem('user'));
 
@@ -481,6 +553,81 @@ const ChatPage = () => {
                     >
                       Cancel
                     </button>
+                  </div>
+                </div>
+              )}
+              {/* Report User Button */}
+              <button
+                onClick={openReportModal}
+                className="report-user-button flex items-center space-x-2 py-2 px-4 bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 transition duration-200"
+              >
+                <IoMdWarning className="text-xl" />
+                <span>Report User</span>
+              </button>
+
+              {/* Report Modal */}
+              {isReportModalOpen && (
+                <div className="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="modal-content bg-white p-6 rounded-lg shadow-lg w-96">
+                    <button
+                      onClick={closeReportModal}
+                      className="close-modal absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    >
+                      ✖
+                    </button>
+                    <h3 className="text-2xl font-semibold text-gray-800 mb-4">Report User</h3>
+                    <form onSubmit={handleReportSubmit}>
+                      <div className="mb-4">
+                        <label className="font-medium text-gray-700">Reason:</label>
+                        <select
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                          required
+                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50"
+                        >
+                          <option value="">Select Reason</option>
+                          <option value="Spam">Spam</option>
+                          <option value="Harassment">Harassment</option>
+                          <option value="Inappropriate Behavior">Inappropriate Behavior</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="font-medium text-gray-700">Description:</label>
+                        <textarea
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Describe the issue"
+                          required
+                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50 h-32"
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="font-medium text-gray-700">Attach Screenshot (Optional):</label>
+                        <input
+                          type="file"
+                          onChange={(e) => setScreenshot(e.target.files[0])}
+                          accept="image/*"
+                          className="mt-2 w-full p-3 border rounded-lg bg-gray-50"
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          className="submit-button bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+                        >
+                          Submit Report
+                        </button>
+                      </div>
+                    </form>
+                    {reportSuccess && (
+                      <div className="mt-4 text-green-600 text-center">
+                        <p>Report submitted successfully!</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

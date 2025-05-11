@@ -87,11 +87,16 @@ const loginUser = async (req, res) => {
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '2h',
     });
-    res.json({ token });
+    res.json({
+      token,
+      name: user.name,    // Add name
+      email: user.email,  // Add email
+      id: user._id,       // Add _id
+      role: user.role     // Add role
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
   }
 };
 module.exports = { registerUser, loginUser };
-
