@@ -226,7 +226,6 @@ const SkillMatchingPage = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
 
                   <div className="space-y-2 text-sm font-medium tracking-wide text-indigo-100">
                     <label className="block">
@@ -307,7 +306,10 @@ const SkillMatchingPage = () => {
                     </button>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="text-center text-white font-bold">No Matches Found</div>
+            )}
           </div>
           <ToastContainer /> {/* Add ToastContainer here */}
         </div>
@@ -315,6 +317,7 @@ const SkillMatchingPage = () => {
       </div>
       <Footer />
       </div>
+      
   );
 };
 

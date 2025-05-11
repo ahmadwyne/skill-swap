@@ -582,8 +582,6 @@ const handleReportSubmit = async (e) => {
                   </div>
                 )}
             
-
-              )}
               {/* Report User Button */}
               <button
                 onClick={openReportModal}
@@ -666,7 +664,9 @@ const handleReportSubmit = async (e) => {
       </div>
       <Footer />
     </div>
+    </ div>
   );
 };
+
 
 export default ChatPage;
