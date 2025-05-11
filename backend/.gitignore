@@ -19,8 +19,5 @@ build/
 .DS_Store
 Thumbs.db
 
-# npm package lock files (optional)
-package-lock.json
-
 # Optional: TypeScript or JavaScript transpiler output
 *.tsbuildinfo

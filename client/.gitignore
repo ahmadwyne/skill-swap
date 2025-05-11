@@ -28,10 +28,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# npm package lock files (optional)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
 # Optional: TypeScript or JavaScript transpiler output
 *.tsbuildinfo
