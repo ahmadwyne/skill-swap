@@ -432,7 +432,7 @@ const ChatPage = () => {
                     >
                       <p className="font-semibold text-white">{getOtherUserName(connection)}</p>
                       <p className="text-white">Skill: {connection.skill || 'Eclipse OCL'}</p>
-                      <p className="text-white">{connection.sessionDate} at {connection.sessionTime}</p>
+                      <p className="text-white">{formatDate(connection.sessionDate)} at {connection.sessionTime}</p>
                     </div>
                   );
                 })
