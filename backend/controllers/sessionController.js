@@ -341,4 +341,43 @@ const markSessionAsCompletedOrCanceled = async (req, res) => {
   }
 };
 
-module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, setSocketIO, scheduleSession, markSessionAsCompletedOrCanceled };  // Export setSocketIO to set io
+// Calculate the average rating for a given user
+const getUserAverageRating = async (req, res) => {
+  const { userId } = req.params; // Get the user ID from the URL
+
+  try {
+    // Fetch all sessions where this user is either userId1 or userId2
+    const sessions = await Session.find({
+      $or: [
+        { userId1: userId },
+        { userId2: userId }
+      ]
+    });
+
+    let totalRating = 0;
+    let count = 0;
+
+    // Loop through all sessions and sum up the ratings
+    sessions.forEach(session => {
+      // If the user is userId1, we look at the ratingByUser2
+      // If the user is userId2, we look at the ratingByUser1
+      if (session.userId1.toString() === userId && session.ratingByUser2 !== null) {
+        totalRating += session.ratingByUser2;
+        count++;
+      } else if (session.userId2.toString() === userId && session.ratingByUser1 !== null) {
+        totalRating += session.ratingByUser1;
+        count++;
+      }
+    });
+
+    // Calculate the average rating
+    const averageRating = count > 0 ? (totalRating / count).toFixed(2) : 'N/A';
+
+    res.json({ averageRating });
+  } catch (err) {
+    console.error('Error fetching user ratings:', err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+module.exports = { upload, io: sessionSocket, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, setSocketIO, scheduleSession, markSessionAsCompletedOrCanceled, getUserAverageRating  };  // Export setSocketIO to set io

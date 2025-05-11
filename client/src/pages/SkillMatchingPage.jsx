@@ -11,6 +11,7 @@ import Footer from "../components/footer/Footer";
 
 const SkillMatchingPage = () => {
   const [matches, setMatches] = useState([]);
+  const [ratings, setRatings] = useState({});  // To store ratings for each match
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,6 +42,22 @@ const SkillMatchingPage = () => {
 
         // Set the matches directly from the backend
         setMatches(response.data);
+
+        // Fetch the average rating for each match's user
+        const ratingsPromises = response.data.map(async (match) => {
+          const userId = match.user._id;  // Get the userId of the match
+          const ratingResponse = await axios.get(`http://localhost:5000/api/sessions/ratings/${userId}`, {
+            headers: { 'x-auth-token': token },  // Make sure the token is sent here as well
+          });
+          return { userId, averageRating: ratingResponse.data.averageRating };
+        });
+
+        const ratingsData = await Promise.all(ratingsPromises);
+        const ratingsMap = ratingsData.reduce((acc, { userId, averageRating }) => {
+          acc[userId] = averageRating;
+          return acc;
+        }, {});
+        setRatings(ratingsMap);
       } catch (err) {
         console.error('Error fetching matches:', err);
       }
@@ -197,7 +214,8 @@ const SkillMatchingPage = () => {
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <p className="text-sm text-white opacity-80">{match.user.status || ''}</p>
-                          <p className="text-sm text-yellow-300 font-semibold text-right">3.5 🌟</p>
+                          {/* Display dynamic average rating */}
+                          <p className="text-sm text-yellow-300 font-semibold text-right">{ratings[match.user._id] || 'N/A'} 🌟</p>
                         </div>
                       </div>
                     </div>
