@@ -102,11 +102,13 @@ const ProfilePage = () => {
     setSuccess("");
     setIsModalOpen(true);
   };
+  
   const closeModal = () => {
     setIsModalOpen(false);
     setError("");
     setSuccess("");
   };
+
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem("token");
     try {

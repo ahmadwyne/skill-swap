@@ -28,13 +28,23 @@ const ProfileSettingsPage = () => {
       const res = await axios.get('http://localhost:5000/api/users/profile', {
         headers: { 'x-auth-token': token },
       });
+
+      // Ensure skillsToTeach and skillsToLearn are arrays and split correctly
+      const skillsToTeach = Array.isArray(res.data.skillsToTeach)
+        ? res.data.skillsToTeach
+        : res.data.skillsToTeach ? res.data.skillsToTeach.split(',').map(skill => skill.trim()) : [];
+
+      const skillsToLearn = Array.isArray(res.data.skillsToLearn)
+        ? res.data.skillsToLearn
+        : res.data.skillsToLearn ? res.data.skillsToLearn.split(',').map(skill => skill.trim()) : [];
+
       setFormData({
         name: res.data.name || '',
         profilePicture: res.data.profilePicture || '',
         status: res.data.status || '',
         socials: res.data.socials || {},
-        skillsToTeach: res.data.skillsToTeach.join(',') || '',
-        skillsToLearn: res.data.skillsToLearn.join(',') || ''
+        skillsToTeach: skillsToTeach, // Correctly split and stored as an array
+        skillsToLearn: skillsToLearn, // Correctly split and stored as an array
       });
 
       if (res.data.profilePicture) {
@@ -49,23 +59,29 @@ const ProfileSettingsPage = () => {
   // Handle profile update
   const handleUpdate = async () => {
     const formDataToSend = new FormData();
-    
+
     // Append all text fields
     formDataToSend.append('name', formData.name);
     formDataToSend.append('status', formData.status);
-    formDataToSend.append('skillsToTeach', formData.skillsToTeach);
-    formDataToSend.append('skillsToLearn', formData.skillsToLearn);
-    
+
+    // Ensure skillsToTeach and skillsToLearn are arrays before sending to the backend
+    const skillsToTeachArray = Array.isArray(formData.skillsToTeach) ? formData.skillsToTeach : formData.skillsToTeach.split(',').map(skill => skill.trim());
+    const skillsToLearnArray = Array.isArray(formData.skillsToLearn) ? formData.skillsToLearn : formData.skillsToLearn.split(',').map(skill => skill.trim());
+
+    // Convert the arrays into comma-separated strings for the backend
+    formDataToSend.append('skillsToTeach', skillsToTeachArray.join(', '));  // Join array to comma-separated string
+    formDataToSend.append('skillsToLearn', skillsToLearnArray.join(', '));  // Join array to comma-separated string
+
     // Append socials as an object (don't stringify)
     formDataToSend.append('socials[facebook]', formData.socials.facebook);
     formDataToSend.append('socials[twitter]', formData.socials.twitter);
-    formDataToSend.append('socials[linkedin]', formData.socials.linkedin);    
-    
+    formDataToSend.append('socials[linkedin]', formData.socials.linkedin);
+
     // If there's a profile picture, append it
     if (formData.profilePicture) {
       formDataToSend.append('profilePicture', formData.profilePicture);
     }
-  
+
     try {
       const token = localStorage.getItem('token');
       const res = await axios.put('http://localhost:5000/api/users/profile', formDataToSend, {
@@ -74,7 +90,7 @@ const ProfileSettingsPage = () => {
           'Content-Type': 'multipart/form-data', // Set the content type to multipart
         },
       });
-  
+
       dispatch(setUser(res.data)); // Update the Redux store
       setMessage('Profile updated successfully!');
       navigate('/profile');
@@ -139,8 +155,7 @@ const ProfileSettingsPage = () => {
             </div>
             </div>
             
-            {/* Pencil Icon */}
-            
+            {/* Pencil Icon */}            
           </label>
           <input
             type="file"
@@ -216,7 +231,7 @@ const ProfileSettingsPage = () => {
             type="text"
             placeholder="Skills You Can Teach"
             value={formData.skillsToTeach}
-            onChange={(e) => setFormData({ ...formData, skillsToTeach: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, skillsToTeach: e.target.value.split(',').map(s => s.trim()) })}
             className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
@@ -226,7 +241,7 @@ const ProfileSettingsPage = () => {
             type="text"
             placeholder="Skills You Want to Learn"
             value={formData.skillsToLearn}
-            onChange={(e) => setFormData({ ...formData, skillsToLearn: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, skillsToLearn: e.target.value.split(',').map(s => s.trim()) })}
             className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
