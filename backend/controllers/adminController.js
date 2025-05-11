@@ -191,94 +191,10 @@ const changePassword = async (req, res) => {
 };
 
 
-// const getEngagementStats = async (req, res) => {
-//   try {
-//     // 1. Top 5 Skills To Teach
-//     const topSkillsToTeach = await User.aggregate([
-//       { $unwind: '$skillsToTeach' },
-//       { $group: { _id: '$skillsToTeach', count: { $sum: 1 } } },
-//       { $sort: { count: -1 } },
-//       { $limit: 5 }
-//     ]);
-//     console.log(topSkillsToTeach);
-
-//     // 2. Top 5 Skills To Learn
-//     const topSkillsToLearn = await User.aggregate([
-//       { $unwind: '$skillsToLearn' },
-//       { $group: { _id: '$skillsToLearn', count: { $sum: 1 } } },
-//       { $sort: { count: -1 } },
-//       { $limit: 5 }
-//     ]);
-//     console.log("Top 5 Skills To Learn:", topSkillsToLearn);
-
-//     // 3. Most Active Users by Session Participation
-//     const mostActiveUsers = await Session.aggregate([
-//       // create an array of the two participants
-//       { $project: { participants: [ '$userId1', '$userId2' ] } },
-//       // unwind so each doc has one participant
-//       { $unwind: '$participants' },
-//       // count sessions per user
-//       { $group: { _id: '$participants', sessionCount: { $sum: 1 } } },
-//       { $sort: { sessionCount: -1 } },
-//       { $limit: 5 },
-//       // lookup user details
-//       {
-//         $lookup: {
-//           from: 'users',           // your users collection
-//           localField: '_id',       // the userId
-//           foreignField: '_id',     // matches User._id
-//           as: 'user'
-//         }
-//       },
-//       { $unwind: '$user' },
-//       {
-//         $project: {
-//           _id: 0,
-//           userId: '$_id',
-//           name: '$user.name',
-//           email: '$user.email',
-//           sessionCount: 1
-//         }
-//       }
-//     ]);
-//     console.log("Most Activated Users", mostActiveUsers);
-
-//     // 4. Session Status Statistics
-//     const sessionStatusStats = await Session.aggregate([
-//       { $group: { _id: '$status', count: { $sum: 1 } } }
-//     ]);
-//     console.log("Session Status Stats",sessionStatusStats);
-
-//     return res.json({
-//       topSkillsToTeach,
-//       topSkillsToLearn,
-//       mostActiveUsers,
-//       sessionStatusStats
-//     });
-//   } catch (error) {
-//     console.error('Engagement Stats Error:', error);
-//     return res.status(500).json({ message: 'Failed to fetch engagement stats' });
-//   }
-// };
-
 // ─── Engagement Stats ───────────────────────────────────────────────
 const getEngagementStats = async (req, res) => {
   try {
-    // 1) All Skills To Teach sorted by usage
-    const skillsToTeachStats = await User.aggregate([
-      { $unwind: '$skillsToTeach' },
-      { $group:    { _id: '$skillsToTeach', count: { $sum: 1 } } },
-      { $sort:     { count: -1 } }
-    ]);
-
-    // 2) All Skills To Learn sorted by usage
-    const skillsToLearnStats = await User.aggregate([
-      { $unwind: '$skillsToLearn' },
-      { $group:    { _id: '$skillsToLearn', count: { $sum: 1 } } },
-      { $sort:     { count: -1 } }
-    ]);
-
-    // 3) All Users by session participation
+    // Most Active Users: All users sorted by session participation (descending)
     const mostActiveUsers = await Session.aggregate([
       { $project: { participants: [ '$userId1', '$userId2' ] } },
       { $unwind:  '$participants' },
@@ -297,36 +213,31 @@ const getEngagementStats = async (req, res) => {
         $project: {
           _id:          0,
           userId:       '$_id',
+          sessionCount: 1,
           name:         '$user.name',
           email:        '$user.email',
-          sessionCount: 1
+          skillsToTeach:'$user.skillsToTeach',
+          skillsToLearn:'$user.skillsToLearn',
+          role:         '$user.role',
+          profilePicture:'$user.profilePicture',
+          socials:      '$user.socials',
+          status:       '$user.status',
+          createdAt:    '$user.createdAt',
+          updatedAt:    '$user.updatedAt'
         }
       }
     ]);
 
-    // 4) Session Status stats
-    const sessionStatusStats = await Session.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
-    ]);
-
-    // 5) All sessions with both users populated
-    const allSessions = await Session.find()
-      .populate('userId1', 'name email')
-      .populate('userId2', 'name email')
-      .sort({ createdAt: -1 }); // most recent first
-
     return res.status(200).json({
-      skillsToTeachStats,
-      skillsToLearnStats,
-      mostActiveUsers,
-      sessionStatusStats,
-      allSessions
+      mostActiveUsers
     });
+
   } catch (error) {
     console.error('Engagement Stats Error:', error);
     return res.status(500).json({ message: 'Failed to fetch engagement stats' });
   }
 };
+
 
 module.exports = {
   getAllUsers,
