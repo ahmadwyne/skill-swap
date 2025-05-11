@@ -92,7 +92,7 @@ const RegisterPage = () => {
           </h2>
 
           {successMessage && (
-            <p className="text-green-500 font-semibold text-center mb-4">
+            <p className="text-green-400 font-bold text-center mb-4">
               {successMessage}
             </p>
           )}
