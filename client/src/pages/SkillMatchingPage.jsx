@@ -79,6 +79,7 @@ const SkillMatchingPage = () => {
   const sendSessionRequest = async (userId) => {
     const token = localStorage.getItem('token');
     const { date, time } = sessionDetails[userId] || {};
+    const skill = matches.find(match => match.user._id === userId)?.teachSkill;  // Get the matched skill
 
     const newErrorMessages = { ...errorMessages };
 
@@ -129,7 +130,7 @@ const SkillMatchingPage = () => {
     try {
       await axios.post(
         'http://localhost:5000/api/sessions/request',
-        { userId2: userId, sessionDate: date, sessionTime: time },
+        { userId2: userId, sessionDate: date, sessionTime: time, skill },
         { headers: { 'x-auth-token': token } }
       );
 
@@ -137,7 +138,7 @@ const SkillMatchingPage = () => {
         'http://localhost:5000/api/notifications/send',
         {
           userId,
-          message: `You have a new session request for ${date} at ${time}`,
+          message: `You have a new session request for ${skill} on ${date} at ${time}`,
           type: 'session_request',
         },
         { headers: { 'x-auth-token': token } }

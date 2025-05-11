@@ -33,9 +33,9 @@ const setSocketIO = (socketIO) => {
 
 // Create a new session request
 const sendSessionRequest = async (req, res) => {
-  const { userId2, sessionDate, sessionTime } = req.body;
+  const { userId2, sessionDate, sessionTime, skill } = req.body;
 
-  if (!userId2 || !sessionDate || !sessionTime) {
+  if (!userId2 || !sessionDate || !sessionTime || !skill) {
     return res.status(400).json({ msg: 'Please provide all required fields (userId2, sessionDate, sessionTime)' });
   }
 
@@ -47,6 +47,7 @@ const sendSessionRequest = async (req, res) => {
       userId2,
       sessionDate,
       sessionTime,
+      skill,  // Store the skill in the session
       status: 'pending',
     });
 
@@ -269,8 +270,11 @@ const scheduleSession = async (req, res) => {
     // Log the session after save to ensure it is properly updated
     console.log('Updated session after save:', session);
 
+    // Extract the skill from the session
+    const skill = session.skill;
+
     // Send the scheduled session notification via WebSockets
-    const message = `You have a new meeting scheduled for ${newMeetingDate} at ${newMeetingTime}`;
+    const message = `You have a new meeting scheduled for ${newMeetingDate} at ${newMeetingTime} regarding the skill: ${skill}.`;
     sendNewMeetingScheduledNotification(session, message);  // Emit notification for both users
 
     res.json({ msg: 'Session scheduled successfully', session });
