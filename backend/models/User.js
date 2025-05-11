@@ -1,4 +1,5 @@
-// models/User.js
+// backend/models/User.js
+
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -16,11 +17,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   skillsToTeach: {
-    type: [String], // Array of skills user can teach
+    type: [String],
     default: [],
   },
   skillsToLearn: {
-    type: [String], // Array of skills user wants to learn
+    type: [String],
     default: [],
   },
   role: {
@@ -28,7 +29,22 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
-  // Other fields like rating, sessions, etc.
+  profilePicture: { 
+    type: String, 
+    default: "" 
+  },
+  socials: {
+    facebook: { type: String, default: '' },
+    twitter: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+  },
+  status: { 
+    type: String, 
+    default: "" 
+  },
+}, {
+  timestamps: true    // adds createdAt & updatedAt
+  
 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -1,0 +1,110 @@
+.home-hero {
+    position: relative;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    color: white;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    overflow-x: hidden;
+  }
+  
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  
+  .hero-content {
+    z-index: 1;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    background: white;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #e0f2ff;
+    font-style: bold;
+  }
+  
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: relative; /* Add this to ensure it's correctly stacked */
+    z-index: 10; /* Ensure it's above other elements */
+  }
+  
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .primary {
+    background: #4361ee;
+    color: white;
+  }
+  
+  .primary:hover {
+    background: #3a0ca3;
+  }
+  
+  .secondary {
+    background: white;
+    color: #4361ee;
+  }
+  
+  .secondary:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Glassmorphism Section */
+  .glass-panel {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4rem 2rem;
+    border-radius: 2rem;
+    margin: 4rem auto;
+    width: 90%;
+    max-width: 1100px;
+    color: white;
+    z-index: 2;
+  }
+  
+  .info-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .info-grid h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+  }
+  
+  .info-grid p {
+    color: #f0f8ff;
+  }
+  
