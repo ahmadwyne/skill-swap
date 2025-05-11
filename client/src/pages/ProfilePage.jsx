@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/navbar/Navbar";
 import NotificationBell from "../components/NotificationBell";
-import ProfileCard from '../components/ProfileCard';  // Import ProfileCard
+import ProfileCard from "../components/ProfileCard"; // Import ProfileCard
 import { FaLinkedin, FaGithub, FaTwitter, FaInstagram } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FiEdit, FiCalendar, FiClock } from "react-icons/fi";
@@ -13,6 +13,8 @@ import { setNotifications } from "../redux/slices/notificationSlice";
 import Background from "../components/background/Background";
 import "../components/background/Background.css";
 import Footer from "../components/footer/Footer";
+import defaultAvatar from "../assets/avatar.jpeg";
+
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -25,6 +27,8 @@ const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingSessions, setPendingSessions] = useState([]);
   const [acceptedSessions, setAcceptedSessions] = useState([]);
+  const [completedSessions, setCompletedSessions] = useState([]);
+  const [canceledSessions, setCanceledSessions] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -74,16 +78,17 @@ const ProfilePage = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const [p, a] = await Promise.all([
-          axios.get("http://localhost:5000/api/sessions/pending", {
-            headers: { "x-auth-token": token },
-          }),
-          axios.get("http://localhost:5000/api/sessions/accepted", {
-            headers: { "x-auth-token": token },
-          }),
+        const [p, a, c, co] = await Promise.all([
+          axios.get("http://localhost:5000/api/sessions/pending", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/accepted", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/completed", { headers: { "x-auth-token": token } }),
+          axios.get("http://localhost:5000/api/sessions/canceled", { headers: { "x-auth-token": token } })
         ]);
+        
         setPendingSessions(p.data);
         setAcceptedSessions(a.data);
+        setCompletedSessions(co.data);
+        setCanceledSessions(c.data);
       } catch {
         setError("Error fetching sessions");
       }
@@ -110,6 +115,9 @@ const ProfilePage = () => {
       const { data } = await axios.put(
         "http://localhost:5000/api/users/profile",
         {
+          name: user.name, // Ensure `name` is sent in the request
+          status: user.status,
+          socials: user.socials,
           skillsToTeach: modalTeach.split(",").map((s) => s.trim()),
           skillsToLearn: modalLearn.split(",").map((s) => s.trim()),
         },
@@ -143,6 +151,11 @@ const ProfilePage = () => {
   };
   const handleStartChat = (id) => navigate(`/chat/${id}`);
 
+  const getSessionPartnerName = (session) => {
+    const partner = session.userId1?._id === user?._id ? session.userId2 : session.userId1;
+    return partner?.name ?? 'Unknown User';
+  };
+
   // Show loading state until the profile is available
   if (!user) {
     return <div>Loading...</div>; // Or use a spinner/loading indicator
@@ -153,7 +166,6 @@ const ProfilePage = () => {
       <Background />
       <div className="relative z-10">
         <Navbar />
-
         {/* Profile and Notification Section */}
         <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto p-8 space-y-6 md:space-y-0">
           {/* Left Profile Card */}
@@ -176,7 +188,7 @@ const ProfilePage = () => {
                 src={
                   user?.profilePicture
                     ? `http://localhost:5000/uploads/profile-pictures/${user.profilePicture}`
-                    : "/default-avatar.png"
+                    : defaultAvatar // Path to your default avatar image
                 }
                 alt="Profile"
                 className="w-full h-full object-cover"
@@ -234,8 +246,6 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-          {/* Right Card with Notifications */}
-          {/* Notification Bell */}
         </div>
 
         {/* Profile Info and Skills Info */}
@@ -250,7 +260,7 @@ const ProfilePage = () => {
               {error}
             </div>
           )}
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills Card */}
             <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-lg shadow-lg p-6 h-96 overflow-y-auto hover:shadow-2xl transition-shadow duration-300">
@@ -318,53 +328,75 @@ const ProfilePage = () => {
 
               <div className="flex space-x-4 mb-4">
                 <button
-                  onClick={() => setActiveTab("pending")}
+                  onClick={() => setActiveTab('pending')}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === "pending"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    activeTab === 'pending'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Pending
                 </button>
                 <button
-                  onClick={() => setActiveTab("upcoming")}
+                  onClick={() => setActiveTab('upcoming')}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === "upcoming"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    activeTab === 'upcoming'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   Upcoming
+                </button>
+                <button
+                  onClick={() => setActiveTab('completed')}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    activeTab === 'completed'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => setActiveTab('canceled')}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    activeTab === 'canceled'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Canceled
                 </button>
               </div>
 
               {/* Scrollable sessions list */}
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 session-list">
-                {(activeTab === "pending" ? pendingSessions : acceptedSessions)
-                  .length > 0 ? (
-                  (activeTab === "pending"
+                {(activeTab === 'pending'
+                  ? pendingSessions
+                  : activeTab === 'upcoming'
+                  ? acceptedSessions
+                  : activeTab === 'completed'
+                  ? completedSessions
+                  : canceledSessions
+                ).length > 0 ? (
+                  (activeTab === 'pending'
                     ? pendingSessions
-                    : acceptedSessions
+                    : activeTab === 'upcoming'
+                    ? acceptedSessions
+                    : activeTab === 'completed'
+                    ? completedSessions
+                    : canceledSessions
                   ).map((s) => (
-                    <div
-                      key={s._id}
-                      className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition"
-                    >
+                    <div key={s._id} className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <div
-                            className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center
-                                                     text-gray-600 text-sm font-semibold"
-                          >
-                            {s.userId1.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
+                          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
+                            {s.userId1?.name
+                              ? s.userId1.name.split(' ').map((n) => n[0]).join('').toUpperCase()
+                              : 'U'}
                           </div>
                           <span className="text-base font-semibold text-gray-800">
-                            {s.userId1.name}
+                            {getSessionPartnerName(s, user._id)}
                           </span>
                         </div>
                         <span className="text-sm text-gray-500">
@@ -385,25 +417,29 @@ const ProfilePage = () => {
 
                       <button
                         onClick={() =>
-                          activeTab === "pending"
+                          activeTab === 'pending'
                             ? handleAccept(s._id)
                             : handleStartChat(s._id)
                         }
                         className={`text-sm font-medium px-3 py-1.5 rounded-lg transition ${
-                          activeTab === "pending"
-                            ? "bg-green-600 text-white hover:bg-green-700"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
+                          activeTab === 'pending'
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
                         } active:scale-95`}
                       >
-                        {activeTab === "pending" ? "Accept" : "Start Chat"}
+                        {activeTab === 'pending' ? 'Accept' : 'Start Chat'}
                       </button>
                     </div>
                   ))
                 ) : (
                   <p className="text-gray-500 text-center text-sm">
-                    {activeTab === "pending"
-                      ? "No pending sessions."
-                      : "No upcoming sessions."}
+                    {activeTab === 'pending'
+                      ? 'No pending sessions.'
+                      : activeTab === 'upcoming'
+                      ? 'No upcoming sessions.'
+                      : activeTab === 'completed'
+                      ? 'No completed sessions.'
+                      : 'No canceled sessions.'}
                   </p>
                 )}
               </div>
@@ -430,10 +466,10 @@ const ProfilePage = () => {
             >
               <motion.div
                 className="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg"
-                initial={{ y: '100vh', opacity: 0 }}
+                initial={{ y: "100vh", opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                exit={{ y: '100vh', opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                exit={{ y: "100vh", opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-left">
                   Update Your Skills
@@ -442,30 +478,30 @@ const ProfilePage = () => {
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 {success && <p className="text-green-500 mb-4">{success}</p>}
 
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2 text-left">
-                  Skills You Can Teach
-                </label>
-                <input
-                  type="text"
-                  value={modalTeach}
-                  onChange={(e) => setModalTeach(e.target.value)}
-                  className="w-full border rounded-lg p-3"
-                  placeholder="e.g. JavaScript, Python"
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-gray-700 mb-2 text-left">
-                  Skills You Want to Learn
-                </label>
-                <input
-                  type="text"
-                  value={modalLearn}
-                  onChange={(e) => setModalLearn(e.target.value)}
-                  className="w-full border rounded-lg p-3"
-                  placeholder="e.g. React, Data Science"
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2 text-left">
+                    Skills You Can Teach
+                  </label>
+                  <input
+                    type="text"
+                    value={modalTeach}
+                    onChange={(e) => setModalTeach(e.target.value)}
+                    className="w-full border rounded-lg p-3"
+                    placeholder="e.g. JavaScript, Python"
+                  />
+                </div>
+                <div className="mb-6">
+                  <label className="block text-gray-700 mb-2 text-left">
+                    Skills You Want to Learn
+                  </label>
+                  <input
+                    type="text"
+                    value={modalLearn}
+                    onChange={(e) => setModalLearn(e.target.value)}
+                    className="w-full border rounded-lg p-3"
+                    placeholder="e.g. React, Data Science"
+                  />
+                </div>
 
                 <div className="flex justify-end space-x-4">
                   <button
