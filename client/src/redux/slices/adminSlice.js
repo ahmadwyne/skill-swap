@@ -137,6 +137,35 @@ export const fetchEngagementStats = createAsyncThunk(
   }
 );
 
+export const blockUser = createAsyncThunk(
+  'admin/blockUser',
+  async (userId, thunkAPI) => {
+    try {
+      await API.patch(`/api/admin/users/${userId}/block`);
+      return userId;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to block user'
+      );
+    }
+  }
+);
+// alongside blockUser…
+export const unblockUser = createAsyncThunk(
+  'admin/unblockUser',
+  async (userId, thunkAPI) => {
+    try {
+      await API.patch(`/api/admin/users/${userId}/unblock`);
+      return userId;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to unblock user'
+      );
+    }
+  }
+);
+
+
 
 // ============================
 // Initial State
@@ -281,6 +310,40 @@ const adminSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+    builder
+      // ─── Block User ────────────────────────────────────────────────
+      .addCase(blockUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(blockUser.fulfilled, (state, action) => {
+        state.loading = false;
+        const blockedId = action.payload; // thunk returns userId
+        const idx = state.users.findIndex(u => u._id === blockedId);
+        if (idx !== -1) {
+          state.users[idx].status = 'blocked';
+        }
+      })
+      .addCase(blockUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+    builder
+      .addCase(unblockUser.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(unblockUser.fulfilled, (state, action) => {
+        state.loading = false;
+        const id = action.payload;
+        const idx = state.users.findIndex(u => u._id === id);
+        if (idx !== -1) state.users[idx].status = '';
+      })
+      .addCase(unblockUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
 
   }
 });

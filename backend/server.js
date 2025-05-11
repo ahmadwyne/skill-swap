@@ -52,6 +52,12 @@ app.use(cors());
 // Serve static files (images) from 'uploads' folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// ← Add this to explicitly serve profile pictures:
+app.use(
+  '/uploads/profile-pictures',
+  express.static(path.join(__dirname, 'uploads/profile-pictures'))
+);
+
 // Serve media files from 'message-uploads' folder
 app.use('/uploads/message-uploads', express.static(path.join(__dirname, 'uploads')));
 

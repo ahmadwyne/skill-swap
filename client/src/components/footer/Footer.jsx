@@ -9,10 +9,8 @@ const Footer = () => {
     { name: "Login", to: "/login" },
     { name: "Signup", to: "/register" },
     { name: "Chat", to: "/chat" },
-    { name: "Resources", to: "/resources" },
     { name: "Skill Matching", to: "/skill-matching" },
     { name: "Settings", to: "/profile-settings" },
-    { name: "Sessions", to: "/sessions" },
     { name: "About Us", to: "/about-us" },
   ];
 

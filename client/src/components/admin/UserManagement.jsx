@@ -1,10 +1,12 @@
 // client/src/components/admin/UserManagement.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchUsers,
   addUser,
-  deleteUser
+  deleteUser,
+  unblockUser
 } from '../../redux/slices/adminSlice';
 
 const UserManagement = () => {
@@ -28,25 +30,29 @@ const UserManagement = () => {
 
   const handleAdd = e => {
     e.preventDefault();
-    dispatch(addUser(formData))
-      .then(() => {
-        setFormData({ name: '', email: '', password: '', role: 'user' });
-        dispatch(fetchUsers());
-      });
+    dispatch(addUser(formData)).then(() => {
+      setFormData({ name: '', email: '', password: '', role: 'user' });
+      dispatch(fetchUsers());
+    });
   };
 
   const handleDelete = id => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUser(id))
-        .then(() => dispatch(fetchUsers()));
+      dispatch(deleteUser(id)).then(() => dispatch(fetchUsers()));
     }
   };
 
-  return (
-    <div className="p-6">
-      <h2 className="text-3xl font-bold mb-6 text-blue-700">User Management</h2>
+  const handleUnblock = id => {
+    dispatch(unblockUser(id)).then(() => dispatch(fetchUsers()));
+  };
 
-      {/* Add New User Form Section */}
+  return (
+    <div className="p-6 space-y-6">
+      <h2 className="text-3xl font-bold mb-6 text-blue-700 text-left">
+        User Management
+      </h2>
+
+      {/* Add New User Form */}
       <div className="mb-10 p-6 border-2 border-blue-700 rounded-lg bg-white shadow-lg">
         <h3 className="text-xl font-bold mb-4 text-blue-700">Add New User</h3>
         <form onSubmit={handleAdd}>
@@ -96,38 +102,68 @@ const UserManagement = () => {
         </form>
       </div>
 
-      {/* Users Table Section */}
-      <div className="border-2 border-blue-700 rounded-lg bg-blue-900 shadow-lg overflow-hidden">
+      {/* Users Table */}
+      <div className="border-2 border-blue-700 rounded-lg bg-white shadow-lg overflow-hidden">
         {loading ? (
-          <p className="text-white p-4">Loading users...</p>
+          <p className="text-blue-700 p-4">Loading users...</p>
         ) : error ? (
           <p className="text-red-300 p-4">{error}</p>
         ) : (
-          <table className="w-full text-white">
-            <thead className="bg-blue-900 font-bold border-b border-white">
+          <table className="w-full">
+            <thead className="bg-blue-900 text-white font-bold">
               <tr>
-                <th className="p-3 text-center border-r border-white">Name</th>
-                <th className="p-3 text-center border-r border-white">Email</th>
-                <th className="p-3 text-center border-r border-white">Role</th>
+                <th className="p-3 text-center border-r border-blue-700">Name</th>
+                <th className="p-3 text-center border-r border-blue-700">Email</th>
+                <th className="p-3 text-center border-r border-blue-700">Role</th>
+                <th className="p-3 text-center border-r border-blue-700">Status</th>
                 <th className="p-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {Array.isArray(users) && users.map((u) => (
-                <tr key={u._id ?? u.id} className=" bg-blue-400 border-t border-white">
-                  <td className="p-3 text-center border-r border-white">{u.name}</td>
-                  <td className="p-3 text-center border-r border-white">{u.email}</td>
-                  <td className="p-3 text-center border-r border-white capitalize">{u.role}</td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => handleDelete(u._id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold shadow"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {users.map(u => {
+                const isBlocked = u.status === 'blocked';
+                return (
+                  <tr key={u._id} className="bg-white border-t border-blue-700">
+                    <td className="p-3 text-center border-r border-blue-700 text-blue-900">
+                      {u.name}
+                    </td>
+                    <td className="p-3 text-center border-r border-blue-700 text-blue-900">
+                      {u.email}
+                    </td>
+                    <td className="p-3 text-center border-r border-blue-700 text-blue-900 capitalize">
+                      {u.role}
+                    </td>
+                    <td className="p-3 text-center border-r border-blue-700">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                          isBlocked
+                            ? 'bg-red-600 text-white'
+                            : 'bg-green-600 text-white'
+                        }`}
+                      >
+                        {isBlocked ? 'Blocked' : 'Active'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-center text-blue-900">
+                      {isBlocked ? (
+                        <button
+                          onClick={() => handleUnblock(u._id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold shadow"
+                        >
+                          Unblock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleDelete(u._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold shadow"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

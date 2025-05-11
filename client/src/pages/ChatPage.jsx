@@ -375,6 +375,30 @@ const ChatPage = () => {
   // Show "Schedule Next Meeting" only if the session is not completed or canceled and both users haven't provided feedback
   const shouldShowScheduleButton = !isSessionCompletedOrCanceled && !bothUsersProvidedFeedback;
 
+  // Left Panel: List of Connections
+  const getOtherUserName = (connection) => {
+    if (!connection) return 'Unknown'; // Check if connection is null or undefined
+    const user1Name = connection.userId1?.name || 'Unknown';  // Safe access to name
+    const user2Name = connection.userId2?.name || 'Unknown';  // Safe access to name
+    return connection.userId1?._id === loggedInUser._id ? user2Name : user1Name;
+  };
+
+  // Right Panel: Chat with Selected Connection
+  const getChatUserName = () => {
+    if (!selectedConnection) return 'Unknown'; // Check if selectedConnection is null or undefined
+    const user1Name = selectedConnection.userId1?.name || 'Unknown'; // Safe access to name
+    const user2Name = selectedConnection.userId2?.name || 'Unknown'; // Safe access to name
+    return selectedConnection.userId1._id === loggedInUser._id
+      ? user2Name
+      : user1Name;
+  };
+
+  // Utility function to format the date to a more readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // This will display the date in a format like "MM/DD/YYYY"
+  };
+
   return (
 
     <div className="min-h-screen relative">
@@ -406,7 +430,7 @@ const ChatPage = () => {
                           : 'bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 hover:bg-indigo-100'}`}
                       onClick={() => handleSelectConnection(connection)}
                     >
-                      <p className="font-semibold text-white">{connection.userId1?.name || 'Unknown'}</p>
+                      <p className="font-semibold text-white">{getOtherUserName(connection)}</p>
                       <p className="text-white">Skill: {connection.skill || 'Eclipse OCL'}</p>
                       <p className="text-white">{connection.sessionDate} at {connection.sessionTime}</p>
                     </div>
@@ -425,7 +449,7 @@ const ChatPage = () => {
             {selectedConnection && (
               <>
                 <h2 className="text-3xl font-semibold mb-4 text-gray-800">
-                  Chat with {selectedConnection.userId1?.name || 'Unknown'}
+                  Chat with {getChatUserName()}
                 </h2>
                 <p className="text-white">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
                 <div className="messages-container bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200  p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
@@ -437,7 +461,9 @@ const ChatPage = () => {
                         {msg.senderId && msg.senderId._id === loggedInUser._id}
 
                         <p>
-                          <strong>{msg.senderName}: </strong>{msg.content}
+                          <strong>{msg.senderName}: </strong>
+                          {/* Render the message content as HTML */}
+                          <span dangerouslySetInnerHTML={{ __html: msg.content }} />
                         </p>
                         {msg.mediaType === 'image' && <img src={msg.mediaUrl} alt="file" className="max-w-xs mt-2" />}
                         {msg.mediaType === 'audio' && <audio controls><source src={msg.mediaUrl} /></audio>}

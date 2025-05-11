@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { AiOutlineLink } from 'react-icons/ai';
 import { FiX } from 'react-icons/fi'; // Red cross icon
+
 const MessageInput = ({ sendMessage }) => {
   const [message, setMessage] = useState('');
   const [link, setLink] = useState('');
@@ -10,12 +11,13 @@ const MessageInput = ({ sendMessage }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const fileInputRef = React.createRef(); // Reference to file input
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
       const filePreviewUrl = URL.createObjectURL(selectedFile);
-      setPreviewUrl(filePreviewUrl);
+      setPreviewUrl(filePreviewUrl); // Create the preview URL
     }
   };
 
@@ -85,6 +87,7 @@ const MessageInput = ({ sendMessage }) => {
         onChange={handleFileChange}
         className="p-2 border-2 border-gray-300 rounded-lg cursor-pointer max-w-[160px] text-sm"
       />
+
       {previewUrl && (
         <div className="preview mt-2 flex items-center">
           <div className="file-preview-container flex items-center mr-2">
@@ -116,8 +119,6 @@ const MessageInput = ({ sendMessage }) => {
           className="p-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
         />
       )}
-
-
 
       <button
         onClick={handleSendMessage}
