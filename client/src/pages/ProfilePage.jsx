@@ -14,7 +14,8 @@ import Background from "../components/background/Background";
 import "../components/background/Background.css";
 import Footer from "../components/footer/Footer";
 import defaultAvatar from "../assets/avatar.jpeg";
-
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -79,12 +80,20 @@ const ProfilePage = () => {
       if (!token) return;
       try {
         const [p, a, c, co] = await Promise.all([
-          axios.get("http://localhost:5000/api/sessions/pending", { headers: { "x-auth-token": token } }),
-          axios.get("http://localhost:5000/api/sessions/accepted", { headers: { "x-auth-token": token } }),
-          axios.get("http://localhost:5000/api/sessions/completed", { headers: { "x-auth-token": token } }),
-          axios.get("http://localhost:5000/api/sessions/canceled", { headers: { "x-auth-token": token } })
+          axios.get("http://localhost:5000/api/sessions/pending", {
+            headers: { "x-auth-token": token },
+          }),
+          axios.get("http://localhost:5000/api/sessions/accepted", {
+            headers: { "x-auth-token": token },
+          }),
+          axios.get("http://localhost:5000/api/sessions/completed", {
+            headers: { "x-auth-token": token },
+          }),
+          axios.get("http://localhost:5000/api/sessions/canceled", {
+            headers: { "x-auth-token": token },
+          }),
         ]);
-        
+
         setPendingSessions(p.data);
         setAcceptedSessions(a.data);
         setCompletedSessions(co.data);
@@ -104,7 +113,7 @@ const ProfilePage = () => {
     setSuccess("");
     setIsModalOpen(true);
   };
-  
+
   const closeModal = () => {
     setIsModalOpen(false);
     setError("");
@@ -154,8 +163,9 @@ const ProfilePage = () => {
   const handleStartChat = (id) => navigate(`/chat/${id}`);
 
   const getSessionPartnerName = (session) => {
-    const partner = session.userId1?._id === user?._id ? session.userId2 : session.userId1;
-    return partner?.name ?? 'Unknown User';
+    const partner =
+      session.userId1?._id === user?._id ? session.userId2 : session.userId1;
+    return partner?.name ?? "Unknown User";
   };
 
   // Show loading state until the profile is available
@@ -247,6 +257,92 @@ const ProfilePage = () => {
                 </div>
               )}
             </div>
+            {/* Progress Tracking */}
+            <div className="flex flex-wrap justify-end items-center space-x-8 mt-6 ml-auto">
+              {/* Completed Sessions */}
+              <div className="w-26 h-26">
+                <CircularProgressbar
+                  value={
+                    (completedSessions.length /
+                      (pendingSessions.length +
+                        completedSessions.length +
+                        canceledSessions.length +
+                        acceptedSessions.length)) *
+                      100 || 0
+                  }
+                  text={`${completedSessions.length}`}
+                  styles={buildStyles({
+                    textColor: "#fff",
+                    pathColor: "#4caf50",
+                    trailColor: "#d6d6d6",
+                  })}
+                />
+                <p className="text-center text-white text-sm mt-2">Completed</p>
+              </div>
+
+              {/* Pending Sessions */}
+              <div className="w-26 h-26">
+                <CircularProgressbar
+                  value={
+                    (pendingSessions.length /
+                      (pendingSessions.length +
+                        completedSessions.length +
+                        canceledSessions.length +
+                        acceptedSessions.length)) *
+                      100 || 0
+                  }
+                  text={`${pendingSessions.length}`}
+                  styles={buildStyles({
+                    textColor: "#fff",
+                    pathColor: "#ff9800",
+                    trailColor: "#d6d6d6",
+                  })}
+                />
+                <p className="text-center text-white text-sm mt-2">Pending</p>
+              </div>
+
+              {/* Upcoming Sessions */}
+              <div className="w-26 h-26">
+                <CircularProgressbar
+                  value={
+                    (acceptedSessions.length /
+                      (pendingSessions.length +
+                        completedSessions.length +
+                        canceledSessions.length +
+                        acceptedSessions.length)) *
+                      100 || 0
+                  }
+                  text={`${acceptedSessions.length}`}
+                  styles={buildStyles({
+                    textColor: "#fff",
+                    pathColor: "#2196f3",
+                    trailColor: "#d6d6d6",
+                  })}
+                />
+                <p className="text-center text-white text-sm mt-2">Upcoming</p>
+              </div>
+
+              {/* Canceled Sessions */}
+              <div className="w-26 h-26">
+                <CircularProgressbar
+                  value={
+                    (canceledSessions.length /
+                      (pendingSessions.length +
+                        completedSessions.length +
+                        canceledSessions.length +
+                        acceptedSessions.length)) *
+                      100 || 0
+                  }
+                  text={`${canceledSessions.length}`}
+                  styles={buildStyles({
+                    textColor: "#fff",
+                    pathColor: "#f44336",
+                    trailColor: "#d6d6d6",
+                  })}
+                />
+                <p className="text-center text-white text-sm mt-2">Canceled</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -262,7 +358,7 @@ const ProfilePage = () => {
               {error}
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Skills Card */}
             <div className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-lg shadow-lg p-6 h-96 overflow-y-auto hover:shadow-2xl transition-shadow duration-300">
@@ -330,41 +426,41 @@ const ProfilePage = () => {
 
               <div className="flex space-x-4 mb-4">
                 <button
-                  onClick={() => setActiveTab('pending')}
+                  onClick={() => setActiveTab("pending")}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === 'pending'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    activeTab === "pending"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Pending
                 </button>
                 <button
-                  onClick={() => setActiveTab('upcoming')}
+                  onClick={() => setActiveTab("upcoming")}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === 'upcoming'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    activeTab === "upcoming"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Upcoming
                 </button>
                 <button
-                  onClick={() => setActiveTab('completed')}
+                  onClick={() => setActiveTab("completed")}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === 'completed'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    activeTab === "completed"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Completed
                 </button>
                 <button
-                  onClick={() => setActiveTab('canceled')}
+                  onClick={() => setActiveTab("canceled")}
                   className={`px-4 py-2 rounded-lg font-medium transition ${
-                    activeTab === 'canceled'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    activeTab === "canceled"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Canceled
@@ -373,34 +469,42 @@ const ProfilePage = () => {
 
               {/* Scrollable sessions list */}
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 session-list">
-                {(activeTab === 'pending'
+                {(activeTab === "pending"
                   ? pendingSessions
-                  : activeTab === 'upcoming'
+                  : activeTab === "upcoming"
                   ? acceptedSessions
-                  : activeTab === 'completed'
+                  : activeTab === "completed"
                   ? completedSessions
                   : canceledSessions
                 ).length > 0 ? (
-                  (activeTab === 'pending'
+                  (activeTab === "pending"
                     ? pendingSessions
-                    : activeTab === 'upcoming'
+                    : activeTab === "upcoming"
                     ? acceptedSessions
-                    : activeTab === 'completed'
+                    : activeTab === "completed"
                     ? completedSessions
                     : canceledSessions
                   ).map((s) => (
-                    <div key={s._id} className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition">
+                    <div
+                      key={s._id}
+                      className="bg-white ring-1 ring-gray-100 rounded-lg shadow p-4 hover:shadow-md hover:-translate-y-0.5 transition"
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
                             {s.userId1?.name
-                              ? s.userId1.name.split(' ').map((n) => n[0]).join('').toUpperCase()
-                              : 'U'}
+                              ? s.userId1.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                              : "U"}
                           </div>
                           <span className="text-base font-semibold text-gray-800">
                             {getSessionPartnerName(s, user._id)}
                           </span>
                         </div>
+                        <p className="text-gray-600">{s.skill}</p> {/* Display the skill */}
                         <span className="text-sm text-gray-500">
                           {formatDate(s.sessionDate)}
                         </span>
@@ -419,29 +523,29 @@ const ProfilePage = () => {
 
                       <button
                         onClick={() =>
-                          activeTab === 'pending'
+                          activeTab === "pending"
                             ? handleAccept(s._id)
                             : handleStartChat(s._id)
                         }
                         className={`text-sm font-medium px-3 py-1.5 rounded-lg transition ${
-                          activeTab === 'pending'
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                          activeTab === "pending"
+                            ? "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
                         } active:scale-95`}
                       >
-                        {activeTab === 'pending' ? 'Accept' : 'Start Chat'}
+                        {activeTab === "pending" ? "Accept" : "Start Chat"}
                       </button>
                     </div>
                   ))
                 ) : (
                   <p className="text-gray-500 text-center text-sm">
-                    {activeTab === 'pending'
-                      ? 'No pending sessions.'
-                      : activeTab === 'upcoming'
-                      ? 'No upcoming sessions.'
-                      : activeTab === 'completed'
-                      ? 'No completed sessions.'
-                      : 'No canceled sessions.'}
+                    {activeTab === "pending"
+                      ? "No pending sessions."
+                      : activeTab === "upcoming"
+                      ? "No upcoming sessions."
+                      : activeTab === "completed"
+                      ? "No completed sessions."
+                      : "No canceled sessions."}
                   </p>
                 )}
               </div>

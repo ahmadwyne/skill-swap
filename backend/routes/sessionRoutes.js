@@ -1,7 +1,7 @@
 // src/routes/sessionRoutes.js
 const express = require("express");
 const router = express.Router();
-const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, scheduleSession, markSessionAsCompletedOrCanceled  } = require('../controllers/sessionController');
+const { upload, sendSessionRequest, acceptSessionRequest, getPendingSessions, getAcceptedSessions, getCompletedSessions, getCanceledSessions, sendMessage, getMessages, scheduleSession, markSessionAsCompletedOrCanceled, getUserAverageRating } = require('../controllers/sessionController');
 const {verifyToken} = require('../middlewares/auth');
 
 // Send session request
@@ -33,5 +33,8 @@ router.post("/schedule", verifyToken, scheduleSession); // New route for schedul
 
 // Mark session as completed or canceled and submit feedback
 router.post("/mark-session", verifyToken, markSessionAsCompletedOrCanceled);
+
+// Route to get the average rating for a user
+router.get('/ratings/:userId', verifyToken, getUserAverageRating);
 
 module.exports = router;

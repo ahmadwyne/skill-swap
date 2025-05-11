@@ -35,32 +35,27 @@ const ProfileSettingsPage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/users/profile', {
-        headers: { 'x-auth-token': token },
-      });
-
-      // Ensure skillsToTeach and skillsToLearn are arrays and split correctly
-      const skillsToTeach = Array.isArray(res.data.skillsToTeach)
-        ? res.data.skillsToTeach
-        : res.data.skillsToTeach ? res.data.skillsToTeach.split(',').map(skill => skill.trim()) : [];
-
-      const skillsToLearn = Array.isArray(res.data.skillsToLearn)
-        ? res.data.skillsToLearn
-        : res.data.skillsToLearn ? res.data.skillsToLearn.split(',').map(skill => skill.trim()) : [];
-
-      setFormData({
-        name: res.data.name || '',
-        profilePicture: res.data.profilePicture || '',
-        status: res.data.status || '',
-        socials: res.data.socials || {},
-        skillsToTeach: skillsToTeach, // Correctly split and stored as an array
-        skillsToLearn: skillsToLearn, // Correctly split and stored as an array
-      });
-
-      if (res.data.profilePicture) {
-        setImagePreview(res.data.profilePicture); // Set the image preview if available
-      } else {
-        setImagePreview(null);  // Set imagePreview to null if no profile picture is found
+      try {
+        const res = await axios.get('http://localhost:5000/api/users/profile', {
+          headers: { 'x-auth-token': token },
+        });
+        const data = res.data;
+        setFormData({
+          name: data.name || '',
+          profilePicture: data.profilePicture || '',
+          status: data.status || '',
+          socials: data.socials || { linkedin: '', facebook: '', twitter: '' },
+          skillsToTeach: data.skillsToTeach ? data.skillsToTeach.join(', ') : '',
+          skillsToLearn: data.skillsToLearn ? data.skillsToLearn.join(', ') : ''
+        });
+        // If there’s an existing picture on server, show its URL
+        if (data.profilePicture) {
+          setImagePreview(`http://localhost:5000/uploads/profile-pictures/${data.profilePicture}`);
+        } else {
+          setImagePreview(null);
+        }
+      } catch {
+        setMessage('Failed to load profile data.');
       }
     };
     fetchProfile();
@@ -74,46 +69,48 @@ const ProfileSettingsPage = () => {
       : defaultAvatar;
 
   // Handle profile update
-  const handleUpdate = async () => {
-    const formDataToSend = new FormData();
+const handleUpdate = async () => {
+  const payload = new FormData();
+  payload.append('name', formData.name);
+  payload.append('status', formData.status);
 
-    // Append all text fields
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('status', formData.status);
+  // Add each skill as a separate field in FormData
+  const skillsToTeachArray = formData.skillsToTeach.split(',').map((s) => s.trim()).filter((s) => s !== ''); // Create an array of skills
+  const skillsToLearnArray = formData.skillsToLearn.split(',').map((s) => s.trim()).filter((s) => s !== ''); // Create an array of skills
 
-    // Ensure skillsToTeach and skillsToLearn are arrays before sending to the backend
-    const skillsToTeachArray = Array.isArray(formData.skillsToTeach) ? formData.skillsToTeach : formData.skillsToTeach.split(',').map(skill => skill.trim());
-    const skillsToLearnArray = Array.isArray(formData.skillsToLearn) ? formData.skillsToLearn : formData.skillsToLearn.split(',').map(skill => skill.trim());
+  // Append each skill separately to FormData
+  skillsToTeachArray.forEach((skill, index) => {
+    payload.append('skillsToTeach[]', skill); // The '[]' syntax will ensure they are treated as an array
+  });
 
-    // Convert the arrays into comma-separated strings for the backend
-    formDataToSend.append('skillsToTeach', skillsToTeachArray.join(', '));  // Join array to comma-separated string
-    formDataToSend.append('skillsToLearn', skillsToLearnArray.join(', '));  // Join array to comma-separated string
+  skillsToLearnArray.forEach((skill, index) => {
+    payload.append('skillsToLearn[]', skill); // Same for skillsToLearn
+  });
 
-    // Append socials as an object (don't stringify)
-    formDataToSend.append('socials[facebook]', formData.socials.facebook);
-    formDataToSend.append('socials[twitter]', formData.socials.twitter);
-    formDataToSend.append('socials[linkedin]', formData.socials.linkedin);
+  // Add socials and profile picture as usual
+  payload.append('socials[linkedin]', formData.socials.linkedin);
+  payload.append('socials[facebook]', formData.socials.facebook);
+  payload.append('socials[twitter]', formData.socials.twitter);
 
-    // If there's a profile picture, append it
-    if (formData.profilePicture) {
-      formDataToSend.append('profilePicture', formData.profilePicture);
-    }
+  if (formData.profilePicture instanceof File) {
+    payload.append('profilePicture', formData.profilePicture);
+  }
 
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.put('http://localhost:5000/api/users/profile', payload, {
-        headers: {
-          'x-auth-token': token,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      dispatch(setUser(res.data)); // Update the Redux store
-      setMessage('Profile updated successfully!');
-      navigate('/profile');
-    } catch {
-      setMessage('Update failed. Please try again.');
-    }
-  };
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.put('http://localhost:5000/api/users/profile', payload, {
+      headers: {
+        'x-auth-token': token,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    dispatch(setUser(res.data));
+    setMessage('Profile updated successfully!');
+    navigate('/profile');
+  } catch {
+    setMessage('Update failed. Please try again.');
+  }
+};
 
   // Handle password change
   const handlePasswordChange = async () => {
@@ -166,8 +163,6 @@ const ProfileSettingsPage = () => {
                 <FaEdit className="text-white bg-gray-700 rounded-full p-1.5 cursor-pointer hover:bg-blue-500 transition" />
               </div>
             </div>
-            
-          {/* Pencil Icon */}            
           </label>
           <input
             type="file"
@@ -225,15 +220,15 @@ const ProfileSettingsPage = () => {
             type="text"
             placeholder="Skills You Can Teach (comma-separated)"
             value={formData.skillsToTeach}
-            onChange={(e) => setFormData({ ...formData, skillsToTeach: e.target.value.split(',').map(s => s.trim()) })}
-            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={e => setFormData({ ...formData, skillsToTeach: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="text"
             placeholder="Skills You Want to Learn (comma-separated)"
             value={formData.skillsToLearn}
-            onChange={(e) => setFormData({ ...formData, skillsToLearn: e.target.value.split(',').map(s => s.trim()) })}
-            className="w-full p-3 border rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={e => setFormData({ ...formData, skillsToLearn: e.target.value })}
+            className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-blue-400"
           />
         </div>
 

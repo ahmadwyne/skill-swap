@@ -22,6 +22,10 @@ router.delete('/users/:id', adminCtrl.deleteUser);
 router.get('/reports', adminCtrl.getAllReports);
 // Resolve a report
 router.patch('/reports/:id/resolve', adminCtrl.resolveReport);
+// ─── Session chat viewer ────────────────────────────────────────────
+// Fetch all chat messages for a given session
+router.get('/session-chats/:sessionId', adminCtrl.getSessionChats);
+
 
 //Analytics routes
 // Get analytics

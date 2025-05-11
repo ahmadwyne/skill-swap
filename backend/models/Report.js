@@ -15,19 +15,30 @@ const ReportSchema = new Schema({
   targetUser: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    default: null
+    default: true
   },
   // The session associated with this report (if any)
   session: {
     type: Schema.Types.ObjectId,
     ref: 'Session',
-    default: null
+    default: true
   },
   // Reason or description of the report
   reason: {
     type: String,
     required: true,
     trim: true
+  },
+  // A detailed description of the issue (added)
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  // Path to the uploaded screenshot (optional)
+  screenshot: {
+    type: String,
+    default: null,
   },
   // Status of the report: open, resolved, or rejected
   status: {

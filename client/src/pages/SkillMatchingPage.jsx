@@ -14,6 +14,7 @@ import Footer from "../components/footer/Footer";
 
 const SkillMatchingPage = () => {
   const [matches, setMatches] = useState([]);
+  const [ratings, setRatings] = useState({});  // To store ratings for each match
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,9 +40,27 @@ const SkillMatchingPage = () => {
           headers: { 'x-auth-token': token },
         });
 
-        const currentUserId = JSON.parse(user)._id;
-        const filteredMatches = response.data.filter((match) => match.user._id !== currentUserId);
-        setMatches(filteredMatches);
+        // Log the fetched data from backend
+        console.log('Fetched Matches:', response.data);
+
+        // Set the matches directly from the backend
+        setMatches(response.data);
+
+        // Fetch the average rating for each match's user
+        const ratingsPromises = response.data.map(async (match) => {
+          const userId = match.user._id;  // Get the userId of the match
+          const ratingResponse = await axios.get(`http://localhost:5000/api/sessions/ratings/${userId}`, {
+            headers: { 'x-auth-token': token },  // Make sure the token is sent here as well
+          });
+          return { userId, averageRating: ratingResponse.data.averageRating };
+        });
+
+        const ratingsData = await Promise.all(ratingsPromises);
+        const ratingsMap = ratingsData.reduce((acc, { userId, averageRating }) => {
+          acc[userId] = averageRating;
+          return acc;
+        }, {});
+        setRatings(ratingsMap);
       } catch (err) {
         console.error('Error fetching matches:', err);
       }
@@ -63,7 +82,9 @@ const SkillMatchingPage = () => {
   const sendSessionRequest = async (userId) => {
     const token = localStorage.getItem('token');
     const { date, time } = sessionDetails[userId] || {};
-  
+
+    const skill = matches.find(match => match.user._id === userId)?.teachSkill;  // Get the matched skill
+
     const newErrorMessages = { ...errorMessages };
   
     // Reset previous errors for this user
@@ -111,7 +132,7 @@ const SkillMatchingPage = () => {
     try {
       await axios.post(
         'http://localhost:5000/api/sessions/request',
-        { userId2: userId, sessionDate: date, sessionTime: time },
+        { userId2: userId, sessionDate: date, sessionTime: time, skill },
         { headers: { 'x-auth-token': token } }
       );
   
@@ -119,7 +140,7 @@ const SkillMatchingPage = () => {
         'http://localhost:5000/api/notifications/send',
         {
           userId,
-          message: `You have a new session request for ${date} at ${time}`,
+          message: `You have a new session request for ${skill} on ${date} at ${time}`,
           type: 'session_request',
         },
         { headers: { 'x-auth-token': token } }
@@ -176,41 +197,33 @@ const SkillMatchingPage = () => {
 
           {/* 💡 Filtered User Cards */}
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {matches
-              .filter((match) =>
-                match.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((match) => (
-                <div
-                  key={match._id}
-                  className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-2xl shadow-lg p-6 min-h-[22rem] flex flex-col justify-between transition-shadow duration-300 hover:shadow-2xl">
-                  <div className="flex items-center gap-4 mb-4">
-                    <img
-                      className="w-14 h-14 rounded-full border border-white/20"
-                      src={
-                        match.user?.profilePicture
-                          ? `http://localhost:5000/uploads/profile-pictures/${match.user.profilePicture}`
-                          : '/default-avatar.png'
-                      }
-                      alt="Avatar"
-                    />
-
-                    <div className="w-full">
-                      <div className="flex flex-wrap items-center justify-between">
-                        <h3 className="text-lg font-bold tracking-wide text-white">
-                          {match.user.name}
-                        </h3>
-                        <p className="text-sm text-indigo-200 italic tracking-tight">
-                          {match.user.skill}
-                        </p>
-                      </div>
-                      <div className="flex justify-between items-center mt-1">
-                        <p className="text-sm text-white opacity-80">
-                          {match.user.status || ''}
-                        </p>
-                        <p className="text-sm text-yellow-300 font-semibold text-right">
-                          3.5 🌟
-                        </p>
+            {matches.length > 0 ? (
+              matches
+                .filter((match) =>
+                  match.user.name.toLowerCase().includes(searchQuery.toLowerCase()) || // Match skill
+                  match.teachSkill.toLowerCase().includes(searchQuery.toLowerCase()) // Match name
+                )
+                .map((match) => (
+                  <div
+                    key={`${match.user._id}-${match.teachSkill}`} // Use a unique key
+                    className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 rounded-2xl shadow-lg p-6 min-h-[22rem] flex flex-col justify-between transition-shadow duration-300 hover:shadow-2xl">
+                    {/* User profile and skill display */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <img
+                        className="w-14 h-14 rounded-full border border-white/20"
+                        src={match.user?.profilePicture ? `http://localhost:5000/uploads/profile-pictures/${match.user.profilePicture}` : '/default-avatar.png'}
+                        alt="Avatar"
+                      />
+                      <div className="w-full">
+                        <div className="flex flex-wrap items-center justify-between">
+                          <h3 className="text-lg font-bold tracking-wide text-white">{match.user.name}</h3>
+                          <p className="text-sm text-indigo-200 italic tracking-tight">{match.teachSkill}</p>
+                        </div>
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-sm text-white opacity-80">{match.user.status || ''}</p>
+                          {/* Display dynamic average rating */}
+                          <p className="text-sm text-yellow-300 font-semibold text-right">{ratings[match.user._id] || 'N/A'} 🌟</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -292,13 +305,6 @@ const SkillMatchingPage = () => {
                     >
                       <FaPaperPlane className="text-[#4361ee]" /> Send Session Request
                     </button>
-
-                    {/* { <button
-                      onClick={() => sendSessionRequest(match.user._id)}
-                      className="flex items-center justify-center gap-2 w-full py-2 bg-[#4361ee] text-white hover:bg-[#3a0ca3] rounded-xl font-semibold transition duration-200"
-                    >
-                      <FaPaperPlane className="text-white" /> Send Session Request
-                    </button> } */}
                   </div>
                 </div>
               ))}
