@@ -95,6 +95,22 @@ export const resolveReport = createAsyncThunk('admin/resolveReport', async (repo
   }
 });
 
+// Fetch all chat messages from a specific session
+export const fetchSessionChats = createAsyncThunk(
+  'admin/fetchSessionChats',
+  async (sessionId, thunkAPI) => {
+    try {
+      const response = await API.get(`/api/admin/session-chats/${sessionId}`);
+      return response.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || 'Failed to fetch session chats'
+      );
+    }
+  }
+);
+
+
 // Fetch analytics
 export const fetchAnalytics = createAsyncThunk('admin/fetchAnalytics', async (_, thunkAPI) => {
   try {
@@ -133,6 +149,8 @@ const initialState = {
   loading: false,
   error: null,
   engagementStats: {},
+  sessionChats: [],
+
 
 };
 
@@ -245,6 +263,21 @@ const adminSlice = createSlice({
         state.engagementStats = action.payload;
       })
       .addCase(fetchEngagementStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+    // Session Chats
+    builder
+      .addCase(fetchSessionChats.pending, state => {
+        state.loading = true;
+        state.error = null;
+        state.sessionChats = [];
+      })
+      .addCase(fetchSessionChats.fulfilled, (state, action) => {
+        state.loading = false;
+        state.sessionChats = action.payload;
+      })
+      .addCase(fetchSessionChats.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
