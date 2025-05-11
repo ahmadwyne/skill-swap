@@ -374,6 +374,30 @@ const handleReportSubmit = async (e) => {
   // Show "Schedule Next Meeting" only if the session is not completed or canceled and both users haven't provided feedback
   const shouldShowScheduleButton = !isSessionCompletedOrCanceled && !bothUsersProvidedFeedback;
 
+  // Left Panel: List of Connections
+  const getOtherUserName = (connection) => {
+    if (!connection) return 'Unknown'; // Check if connection is null or undefined
+    const user1Name = connection.userId1?.name || 'Unknown';  // Safe access to name
+    const user2Name = connection.userId2?.name || 'Unknown';  // Safe access to name
+    return connection.userId1?._id === loggedInUser._id ? user2Name : user1Name;
+  };
+
+  // Right Panel: Chat with Selected Connection
+  const getChatUserName = () => {
+    if (!selectedConnection) return 'Unknown'; // Check if selectedConnection is null or undefined
+    const user1Name = selectedConnection.userId1?.name || 'Unknown'; // Safe access to name
+    const user2Name = selectedConnection.userId2?.name || 'Unknown'; // Safe access to name
+    return selectedConnection.userId1._id === loggedInUser._id
+      ? user2Name
+      : user1Name;
+  };
+
+  // Utility function to format the date to a more readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(); // This will display the date in a format like "MM/DD/YYYY"
+  };
+
   return (
 
     <div className="min-h-screen relative">
@@ -383,8 +407,6 @@ const handleReportSubmit = async (e) => {
         <div className="flex flex-1">
           {/* Left Panel: List of Connections */}
           <div className="left-panel w-1/4 p-6 max-h-screen overflow-auto bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
-
-
             <h2 className="text-2xl font-semibold text-gray-800">Connections</h2>
             <div className="space-y-4 mt-6">
               {connections.length > 0 ? (
@@ -394,9 +416,9 @@ const handleReportSubmit = async (e) => {
                     className="bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200 p-4 rounded-lg shadow-lg cursor-pointer hover:bg-indigo-100"
                     onClick={() => handleSelectConnection(connection)}
                   >
-                    <p className="font-semibold text-white">{connection.userId1?.name || 'Unknown'}</p>
+                    <p className="font-semibold text-white">{getOtherUserName(connection)}</p>
                     <p className="text-gray-600">Skill: {connection.skill || 'Eclipse OCL' }</p>
-                    <p className="text-white">{connection.sessionDate} at {connection.sessionTime}</p>
+                    <p className="text-white">{formatDate(connection.sessionDate)} at {connection.sessionTime}</p>
                   </div>
                 ))
               ) : (
@@ -411,7 +433,7 @@ const handleReportSubmit = async (e) => {
             {selectedConnection && (
               <>
                 <h2 className="text-3xl font-semibold mb-4 text-gray-800">
-                  Chat with {selectedConnection.userId1?.name || 'Unknown'}
+                  Chat with {getChatUserName()}
                 </h2>
                  <p className="text-gray-600">Skill: {selectedConnection.skill || 'Eclipse OCL'}</p>
                 <div className="messages-container bg-gradient-to-br from-blue-400 via-blue-300 to-blue-200  p-4 rounded-lg shadow-lg mb-6 max-h-96 overflow-auto">
