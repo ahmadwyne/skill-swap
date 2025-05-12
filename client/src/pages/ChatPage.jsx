@@ -385,7 +385,10 @@ const ChatPage = () => {
 
   // Right Panel: Chat with Selected Connection
   const getChatUserName = () => {
-    if (!selectedConnection) return 'Unknown'; // Check if selectedConnection is null or undefined
+    if (!selectedConnection || !selectedConnection.userId1 || !selectedConnection.userId2) {
+      return 'Unknown'; // Return a fallback value if selectedConnection or its properties are null
+    }
+    
     const user1Name = selectedConnection.userId1?.name || 'Unknown'; // Safe access to name
     const user2Name = selectedConnection.userId2?.name || 'Unknown'; // Safe access to name
     return selectedConnection.userId1._id === loggedInUser._id
