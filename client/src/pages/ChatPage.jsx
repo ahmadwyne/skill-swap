@@ -587,8 +587,8 @@ const ChatPage = () => {
                         />
 
                         <button
-                          onClick={() => handleMarkSession('completed')}
-                          className="bg-white text-[#4361ee] border border-[#4361ee]  py-3 px-4 rounded-lg mt-6 w-full transition duration-300 text-lg font-semibold"
+                          onClick={closeFeedbackModal}
+                          className="bg-white text-[#4361ee] border border-[#4361ee] py-3 px-4 rounded-lg mt-6 w-full transition duration-300 text-lg font-semibold"
                         >
                           Submit Feedback
                         </button>

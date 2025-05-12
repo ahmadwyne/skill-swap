@@ -288,7 +288,7 @@ const scheduleSession = async (req, res) => {
 
 const markSessionAsCompletedOrCanceled = async (req, res) => {
   const { sessionId, status, rating, feedback } = req.body;
-  const userId = req.user.id;  // This should be populated by the verifyToken middleware
+  const userId = req.user.id;
 
   try {
     const session = await Session.findById(sessionId);
@@ -296,23 +296,24 @@ const markSessionAsCompletedOrCanceled = async (req, res) => {
       return res.status(404).json({ msg: 'Session not found' });
     }
 
-    // Ensure the user is authorized to mark the session
     if (![session.userId1.toString(), session.userId2.toString()].includes(userId)) {
       return res.status(403).json({ msg: 'You are not authorized to mark this session' });
     }
 
-    // Proceed with updating session status
-    session.status = status;
+    // Build the update object
+    const update = {
+      status,
+    };
 
     if (status === 'completed') {
       if (session.userId1.toString() === userId) {
-        session.ratingByUser1 = rating;
-        session.feedbackByUser1 = feedback;
-        session.feedbackGivenByUser1 = true;
+        update.ratingByUser1 = rating;
+        update.feedbackByUser1 = feedback;
+        update.feedbackGivenByUser1 = true;
       } else {
-        session.ratingByUser2 = rating;
-        session.feedbackByUser2 = feedback;
-        session.feedbackGivenByUser2 = true;
+        update.ratingByUser2 = rating;
+        update.feedbackByUser2 = feedback;
+        update.feedbackGivenByUser2 = true;
       }
 
       // If both users have given feedback, close the session
@@ -320,24 +321,20 @@ const markSessionAsCompletedOrCanceled = async (req, res) => {
         session.sessionClosed = true;
       }
 
-      await session.save();
+      await Session.findByIdAndUpdate(sessionId, update, { new: true });
 
-      // Notify the other user to provide feedback
       const otherUserId = session.userId1.toString() === userId ? session.userId2 : session.userId1;
-      console.log(`Notifying user ${otherUserId} for feedback request.`);
-      await sendNotificationForFeedbackRequest(otherUserId);  // Notify the other user
+      await sendNotificationForFeedbackRequest(otherUserId);
 
-      return res.json({ msg: 'Session updated successfully', session });
+      return res.json({ msg: 'Session updated successfully' });
     } else {
-      session.sessionClosed = true;  // If canceled, close the session
-      await session.save();
+      update.sessionClosed = true;
+      await Session.findByIdAndUpdate(sessionId, update, { new: true });
 
-      // Notify both users about session cancellation
-      console.log(`Session canceled. Notifying users ${session.userId1} and ${session.userId2}`);
       await sendNotificationForSessionCancellation(session.userId1);
       await sendNotificationForSessionCancellation(session.userId2);
 
-      return res.json({ msg: 'Session canceled successfully', session });
+      return res.json({ msg: 'Session canceled successfully' });
     }
   } catch (error) {
     console.error('Error marking session as completed or canceled:', error);

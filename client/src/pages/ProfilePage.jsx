@@ -94,7 +94,10 @@ const ProfilePage = () => {
           }),
         ]);
 
-        setPendingSessions(p.data);
+        const now = new Date();
+        setPendingSessions(
+          p.data.filter((session) => new Date(session.sessionDate) >= now)
+        );
         setAcceptedSessions(a.data);
         setCompletedSessions(co.data);
         setCanceledSessions(c.data);
@@ -559,7 +562,11 @@ const ProfilePage = () => {
                               : "bg-blue-600 text-white hover:bg-blue-700"
                           } active:scale-95`}
                         >
-                          {activeTab === "pending" ? "Accept" : "Start Chat"}
+                        {activeTab === "pending"
+                          ? "Accept"
+                          : activeTab === "upcoming"
+                          ? "Start Chat"
+                          : "View Feedback"}
                         </button>
                       </div>
                     ))
